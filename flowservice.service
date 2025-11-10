@@ -1,0 +1,37 @@
+[Unit]
+Description=FlowService - Image Processing with Qwen AI
+Documentation=https://github.com/your-org/flowservice
+After=network.target
+
+[Service]
+Type=simple
+User=flowservice
+Group=flowservice
+WorkingDirectory=/opt/flowservice
+
+# 环境变量
+Environment="DASHSCOPE_API_KEY=sk-your-api-key-here"
+Environment="JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC"
+
+# 启动命令
+ExecStart=/usr/bin/java $JAVA_OPTS -jar /opt/flowservice/flowservice.jar --spring.profiles.active=prod
+
+# 优雅停止
+SuccessExitStatus=143
+TimeoutStopSec=10
+
+# 自动重启
+Restart=on-failure
+RestartSec=5
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=flowservice
+
+# 安全设置
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
