@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowService 测试页面</title>
+    <title>FlowService - 食物营养分析</title>
     <style>
         * {
             margin: 0;
@@ -106,42 +106,10 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
         .btn-group {
             display: flex;
             gap: 10px;
+            margin-top: 20px;
         }
 
         .btn {
@@ -213,6 +181,9 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .result-section {
@@ -237,30 +208,61 @@
             font-size: 14px;
         }
 
-        .metadata {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
+        .food-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
         }
 
-        .metadata-item {
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
+        .food-tag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        .metadata-label {
-            font-size: 11px;
-            color: #999;
-            margin-bottom: 4px;
+        .confidence-bar {
+            margin-top: 8px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
-        .metadata-value {
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+
+        .confidence-text {
+            margin-top: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .balanced-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
-            color: #333;
+            margin-top: 8px;
+        }
+
+        .balanced-true {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .balanced-false {
+            background: #fff3e0;
+            color: #e65100;
         }
 
         .error {
@@ -272,24 +274,20 @@
             margin-top: 20px;
             display: none;
         }
-
-        .success {
-            color: #2f9e44;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>FlowService 测试页面</h1>
-            <p>上传图片，让 AI 为你分析内容</p>
+            <h1>🍎 FlowService - 食物营养分析</h1>
+            <p>上传食物图片，AI 为你分析营养成分和健康建议</p>
         </div>
 
         <div class="content">
             <!-- 上传区域 -->
             <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📸</div>
-                <div class="upload-text">点击或拖拽图片到此处</div>
+                <div class="upload-icon">🍽️</div>
+                <div class="upload-text">点击或拖拽食物图片到此处</div>
                 <div class="upload-hint">支持 JPG、PNG、GIF 格式，最大 10MB</div>
             </div>
             <input type="file" id="fileInput" accept="image/*">
@@ -299,27 +297,20 @@
                 <img id="previewImage" class="preview-image" alt="预览图片">
             </div>
 
-            <!-- 表单 -->
-            <form id="uploadForm">
-                <div class="form-group">
-                    <label for="promptInput">提示词 (告诉 AI 你想了解什么)</label>
-                    <textarea id="promptInput" placeholder="例如：请详细描述这张图片的内容，包括主要物体、场景、颜色和氛围">请详细描述这张图片的内容</textarea>
-                </div>
-
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-                        开始分析
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="resetBtn">
-                        重置
-                    </button>
-                </div>
-            </form>
+            <!-- 按钮组 -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="submitBtn" disabled>
+                    🔍 开始分析
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetBtn">
+                    🔄 重置
+                </button>
+            </div>
 
             <!-- 加载动画 -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>AI 正在分析图片，请稍候...</p>
+                <p>AI 正在分析食物图片，请稍候...</p>
             </div>
 
             <!-- 错误提示 -->
@@ -327,19 +318,37 @@
 
             <!-- 结果展示 -->
             <div class="result-container" id="resultContainer">
-                <div class="result-title">✨ 分析结果</div>
-
-                <div class="result-section">
-                    <div class="result-label">摘要</div>
-                    <div class="result-text" id="summaryText"></div>
+                <div class="result-title">
+                    <span>✨</span>
+                    <span>营养分析结果</span>
                 </div>
 
+                <!-- 识别出的食物 -->
                 <div class="result-section">
-                    <div class="result-label">详细分析</div>
-                    <div class="result-text" id="detailedText"></div>
+                    <div class="result-label">🍴 识别出的食物</div>
+                    <div class="food-items" id="foodItems"></div>
                 </div>
 
-                <div class="metadata" id="metadata"></div>
+                <!-- 识别确定度 -->
+                <div class="result-section">
+                    <div class="result-label">📊 识别确定度</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill"></div>
+                    </div>
+                    <div class="confidence-text" id="confidenceText"></div>
+                </div>
+
+                <!-- 营养均衡性 -->
+                <div class="result-section">
+                    <div class="result-label">⚖️ 营养均衡性</div>
+                    <div id="balancedBadge"></div>
+                </div>
+
+                <!-- 营养评价 -->
+                <div class="result-section">
+                    <div class="result-label">💡 营养评价</div>
+                    <div class="result-text" id="nutritionSummary"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -349,13 +358,11 @@
         const fileInput = document.getElementById('fileInput');
         const previewContainer = document.getElementById('previewContainer');
         const previewImage = document.getElementById('previewImage');
-        const uploadForm = document.getElementById('uploadForm');
         const submitBtn = document.getElementById('submitBtn');
         const resetBtn = document.getElementById('resetBtn');
         const loading = document.getElementById('loading');
         const errorMessage = document.getElementById('errorMessage');
         const resultContainer = document.getElementById('resultContainer');
-        const promptInput = document.getElementById('promptInput');
 
         let selectedFile = null;
 
@@ -413,18 +420,10 @@
             hideError();
         }
 
-        // 提交表单
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
+        // 提交分析
+        submitBtn.addEventListener('click', async () => {
             if (!selectedFile) {
                 showError('请先选择图片！');
-                return;
-            }
-
-            const prompt = promptInput.value.trim();
-            if (!prompt) {
-                showError('请输入提示词！');
                 return;
             }
 
@@ -437,7 +436,6 @@
             // 创建表单数据
             const formData = new FormData();
             formData.append('file', selectedFile);
-            formData.append('prompt', prompt);
 
             try {
                 const response = await fetch('/api/image/upload', {
@@ -450,7 +448,7 @@
                 if (result.code === 200) {
                     displayResult(result.data);
                 } else {
-                    showError(result.message || '处理失败，请重试');
+                    showError(result.message || '分析失败，请重试');
                 }
             } catch (error) {
                 showError('网络错误：' + error.message);
@@ -462,39 +460,28 @@
 
         // 显示结果
         function displayResult(data) {
-            document.getElementById('summaryText').textContent = data.summary || '无摘要';
-            document.getElementById('detailedText').textContent = data.processedText || '无详细内容';
+            // 显示食物列表
+            const foodItems = document.getElementById('foodItems');
+            foodItems.innerHTML = data.foodItems.map(item =>
+                `<div class="food-tag">${item}</div>`
+            ).join('');
 
-            // 显示元数据
-            const metadata = document.getElementById('metadata');
-            metadata.innerHTML = `
-                <div class="metadata-item">
-                    <div class="metadata-label">任务ID</div>
-                    <div class="metadata-value" style="font-size: 11px; word-break: break-all;">${data.taskId}</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">文件名</div>
-                    <div class="metadata-value">${data.metadata.fileName}</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">文件大小</div>
-                    <div class="metadata-value">${formatFileSize(data.metadata.fileSize)}</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">处理时间</div>
-                    <div class="metadata-value">${data.metadata.processingTimeMs}ms</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">使用模型</div>
-                    <div class="metadata-value">${data.metadata.model}</div>
-                </div>
-                ${data.metadata.tokensUsed ? `
-                <div class="metadata-item">
-                    <div class="metadata-label">Token使用</div>
-                    <div class="metadata-value">${data.metadata.tokensUsed}</div>
-                </div>
-                ` : ''}
-            `;
+            // 显示确定度
+            const confidence = Math.round(data.confidence * 100);
+            document.getElementById('confidenceFill').style.width = confidence + '%';
+            document.getElementById('confidenceText').textContent =
+                `识别确定度：${confidence}% ${confidence >= 90 ? '(非常确定)' : confidence >= 70 ? '(比较确定)' : '(需要确认)'}`;
+
+            // 显示营养均衡性
+            const balancedBadge = document.getElementById('balancedBadge');
+            if (data.isBalanced) {
+                balancedBadge.innerHTML = '<div class="balanced-badge balanced-true">✓ 营养均衡</div>';
+            } else {
+                balancedBadge.innerHTML = '<div class="balanced-badge balanced-false">⚠ 营养不均衡</div>';
+            }
+
+            // 显示营养评价
+            document.getElementById('nutritionSummary').textContent = data.nutritionSummary;
 
             resultContainer.style.display = 'block';
             resultContainer.scrollIntoView({ behavior: 'smooth' });
@@ -506,7 +493,6 @@
             fileInput.value = '';
             previewContainer.style.display = 'none';
             resultContainer.style.display = 'none';
-            promptInput.value = '请详细描述这张图片的内容';
             submitBtn.disabled = true;
             hideError();
         });
@@ -519,13 +505,6 @@
 
         function hideError() {
             errorMessage.style.display = 'none';
-        }
-
-        // 格式化文件大小
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
         }
     </script>
 </body>

@@ -9,7 +9,15 @@
       "WebFetch(domain:bailian.console.aliyun.com)",
       "WebSearch",
       "Bash(tree:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(brew install:*)",
+      "Bash(java -version:*)",
+      "Bash(javac:*)",
+      "Bash(mvn spring-boot:run:*)",
+      "Bash(mvn dependency:purge-local-repository:*)",
+      "Bash(mvn dependency:resolve:*)",
+      "Bash(mvn compile:*)",
+      "Bash(javap:*)"
     ],
     "deny": [],
     "ask": []
