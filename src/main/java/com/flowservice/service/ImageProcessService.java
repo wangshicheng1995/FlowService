@@ -19,6 +19,7 @@ public class ImageProcessService {
 
     private final QwenApiService qwenApiService;
     private final DataProcessService dataProcessService;
+    private final MealRecordService mealRecordService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ProcessResult processImage(ProcessRequest request) {
@@ -81,6 +82,7 @@ public class ImageProcessService {
     /**
      * 处理食物图片分析请求
      * 调用通义千问 AI 进行食物识别和营养评估，并解析返回的 JSON
+     * 同时将分析结果保存到数据库
      *
      * @param request 处理请求（包含图片 Base64 和 Prompt）
      * @return 食物分析结果
@@ -125,7 +127,16 @@ public class ImageProcessService {
             FoodAnalysisResponse response = objectMapper.readValue(cleanedJson, FoodAnalysisResponse.class);
 
             log.info("食物分析任务完成: {}, 识别到 {} 种食物, 确定度: {}, 营养均衡: {}",
-                    taskId, response.getFoodItems().size(), response.getConfidence(), response.getIsBalanced());
+                    taskId, response.getFoods().size(), response.getConfidence(), response.getIsBalanced());
+
+            // 保存分析结果到数据库
+            try {
+                mealRecordService.saveMealRecord(response, null);
+                log.info("食物分析结果已保存到数据库");
+            } catch (Exception e) {
+                log.error("保存用餐记录到数据库失败，但继续返回 AI 分析结果", e);
+                // 不抛出异常，继续返回 AI 分析结果
+            }
 
             return response;
 

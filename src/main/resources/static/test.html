@@ -218,10 +218,42 @@
         .food-tag {
             background: #667eea;
             color: white;
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 500;
+        }
+
+        .food-detail {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .nutrition-item {
+            background: #f8f9ff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e5ff;
+        }
+
+        .nutrition-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .nutrition-label {
+            font-size: 12px;
+            color: #666;
         }
 
         .confidence-bar {
@@ -329,9 +361,15 @@
                     <div class="food-items" id="foodItems"></div>
                 </div>
 
+                <!-- 营养成分 -->
+                <div class="result-section">
+                    <div class="result-label">📊 营养成分</div>
+                    <div class="nutrition-grid" id="nutritionGrid"></div>
+                </div>
+
                 <!-- 识别确定度 -->
                 <div class="result-section">
-                    <div class="result-label">📊 识别确定度</div>
+                    <div class="result-label">🎯 识别确定度</div>
                     <div class="confidence-bar">
                         <div class="confidence-fill" id="confidenceFill"></div>
                     </div>
@@ -460,11 +498,58 @@
 
         // 显示结果
         function displayResult(data) {
-            // 显示食物列表
+            // 显示食物列表（新格式）
             const foodItems = document.getElementById('foodItems');
-            foodItems.innerHTML = data.foodItems.map(item =>
-                `<div class="food-tag">${item}</div>`
-            ).join('');
+            foodItems.innerHTML = data.foods.map(food => {
+                const details = [];
+                if (food.amount_g) details.push(`${food.amount_g}g`);
+                if (food.cook) details.push(food.cook);
+
+                return `
+                    <div class="food-tag">
+                        <div>${food.name}</div>
+                        ${details.length > 0 ? `<div class="food-detail">${details.join(' · ')}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // 显示营养成分
+            const nutritionGrid = document.getElementById('nutritionGrid');
+            const nutrition = data.nutrition;
+            nutritionGrid.innerHTML = `
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.energy_kcal}</div>
+                    <div class="nutrition-label">热量 (kcal)</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.protein_g}g</div>
+                    <div class="nutrition-label">蛋白质</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.fat_g}g</div>
+                    <div class="nutrition-label">脂肪</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.carb_g}g</div>
+                    <div class="nutrition-label">碳水化合物</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.fiber_g}g</div>
+                    <div class="nutrition-label">膳食纤维</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.sodium_mg}mg</div>
+                    <div class="nutrition-label">钠</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.sugar_g}g</div>
+                    <div class="nutrition-label">糖</div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="nutrition-value">${nutrition.sat_fat_g}g</div>
+                    <div class="nutrition-label">饱和脂肪</div>
+                </div>
+            `;
 
             // 显示确定度
             const confidence = Math.round(data.confidence * 100);

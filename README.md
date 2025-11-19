@@ -44,7 +44,17 @@ qwen:
     key: your-actual-api-key
 ```
 
-### 3. 编译和运行
+### 3. 准备 MySQL 数据库
+
+项目与测试环境都依赖 MySQL。执行 `src/main/resources/db/init.sql` 会创建 `flow_db`（业务库）以及 `flow_test`（测试库），并在两个库中创建 `meal_records` 表：
+
+```bash
+mysql -u root -p < src/main/resources/db/init.sql
+```
+
+> 如果数据库用户名/密码不是默认的 `root/root`，请在执行前通过环境变量 `DB_USERNAME`、`DB_PASSWORD` 或直接在命令里指定。
+
+### 4. 编译和运行
 
 ```bash
 # 编译项目
@@ -55,6 +65,16 @@ mvn spring-boot:run
 ```
 
 服务将在 `http://localhost:8080` 启动。
+
+### 5. 运行与 meal_records 相关的测试
+
+测试 Profile 连接 `flow_test` 数据库，并只验证与 `meal_records` 相关的业务逻辑。运行测试前请确保已经按照第 3 步初始化测试库：
+
+```bash
+mvn test -Dtest=com.flowservice.service.MealRecordServiceTest
+```
+
+如需清空测试库的数据，可以重新执行 `src/main/resources/db/init.sql` 或手动 `TRUNCATE flow_test.meal_records;`。
 
 ## API 接口
 

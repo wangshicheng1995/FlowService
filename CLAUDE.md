@@ -157,7 +157,7 @@ class FoodRecognitionServiceTest {
 **目标**: 测试完整业务流程
 
 ```bash
-# 启动测试数据库(如 H2 或 Testcontainers)
+# 确保本地 MySQL 测试库已启动
 # 运行集成测试
 mvn verify
 ```
@@ -345,6 +345,16 @@ mvn flyway:info
 # 生成数据库文档
 mvn jooq-codegen:generate
 ```
+
+#### 测试数据库初始化
+- 本地 MySQL 需要同时存在 `flow_db` 与 `flow_test` 两个 schema, 并且都包含 `meal_records` 表。
+- 直接执行仓库中的 `src/main/resources/db/init.sql` 即可一次性创建主库和测试库:
+
+```bash
+mysql -u root -p < src/main/resources/db/init.sql
+```
+
+- Spring Boot 测试 Profile(`application-test.yml`) 会连接 `flow_test`, 并通过 `ddl-auto=create-drop` 自动建表/清表, 但数据库本身必须提前创建。
 
 ## 特定场景验收
 
