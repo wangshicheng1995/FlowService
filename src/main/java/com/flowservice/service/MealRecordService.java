@@ -33,7 +33,7 @@ public class MealRecordService {
      * 将 AI 分析结果存储到数据库
      *
      * @param analysisResponse AI 分析结果
-     * @param imageUrl 图片 URL（可选）
+     * @param imageUrl         图片 URL（可选）
      * @return 保存后的用餐记录
      */
     @Transactional
@@ -64,9 +64,26 @@ public class MealRecordService {
             // 保存完整的 AI 返回 JSON
             record.setAiResultJson(objectMapper.writeValueAsString(analysisResponse));
 
+            // 设置营养详细信息
+            if (analysisResponse.getNutrition() != null) {
+                com.flowservice.entity.MealNutrition nutrition = new com.flowservice.entity.MealNutrition();
+                nutrition.setMealRecord(record);
+                nutrition.setEnergyKcal(analysisResponse.getNutrition().getEnergyKcal());
+                nutrition.setProteinG(analysisResponse.getNutrition().getProteinG());
+                nutrition.setFatG(analysisResponse.getNutrition().getFatG());
+                nutrition.setCarbG(analysisResponse.getNutrition().getCarbG());
+                nutrition.setFiberG(analysisResponse.getNutrition().getFiberG());
+                nutrition.setSodiumMg(analysisResponse.getNutrition().getSodiumMg());
+                nutrition.setSugarG(analysisResponse.getNutrition().getSugarG());
+                nutrition.setSatFatG(analysisResponse.getNutrition().getSatFatG());
+
+                record.setMealNutrition(nutrition);
+            }
+
             MealRecord savedRecord = mealRecordRepository.save(record);
             log.info("用餐记录已保存: id={}, userId={}, healthScore={}, riskLevel={}",
-                    savedRecord.getId(), savedRecord.getUserId(), savedRecord.getHealthScore(), savedRecord.getRiskLevel());
+                    savedRecord.getId(), savedRecord.getUserId(), savedRecord.getHealthScore(),
+                    savedRecord.getRiskLevel());
 
             return savedRecord;
 
@@ -123,7 +140,7 @@ public class MealRecordService {
      * 查询用户最近的用餐记录
      *
      * @param userId 用户 ID
-     * @param limit 记录数量
+     * @param limit  记录数量
      * @return 用餐记录列表
      */
     public List<MealRecord> getRecentMealRecords(Long userId, int limit) {
@@ -184,7 +201,7 @@ public class MealRecordService {
      * 计算风险等级
      *
      * @param analysisResponse AI 分析结果
-     * @param healthScore 健康分数
+     * @param healthScore      健康分数
      * @return 风险等级（LOW/MEDIUM/HIGH）
      */
     private String calculateRiskLevel(FoodAnalysisResponse analysisResponse, int healthScore) {

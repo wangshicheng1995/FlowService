@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowService - 系统流程图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📸 图片上传与分析流程图</h1>
+        <div class="mermaid">
+            sequenceDiagram
+            autonumber
+            actor User as 用户 (User)
+            participant Controller as ImageController
+            participant Service as ImageProcessService
+            participant AI as QwenApiService (AI)
+            participant Impact as ImpactAnalysisService
+            participant Calc as HealthTagCalculator
+            participant DBService as MealRecordService
+            participant DB as Database
+
+            Note over User, Controller: 1. 用户上传图片
+            User->>Controller: POST /upload (image)
+            Controller->>Service: processFoodAnalysis(request)
+
+            rect rgb(240, 248, 255)
+            Note over Service, AI: 2. 食物识别与基础营养分析
+            Service->>Service: 验证图片数据
+            Service->>AI: callQwenVisionApi (Prompt: FOOD_NUTRITION)
+            AI-->>Service: 返回 JSON (食物列表, 基础营养)
+            Service->>Service: 解析 JSON -> FoodAnalysisResponse
+            end
+
+            rect rgb(255, 245, 238)
+            Note over Service, Impact: 3. 健康影响分析 (新增功能)
+            alt 解析成功且包含营养数据
+            Service->>Impact: analyzeImpact(MealNutrition)
+            Impact->>Calc: calcTags(MealNutrition)
+            Calc-->>Impact: 返回 Set&lt;NutritionTag&gt; (如 HIGH_SODIUM)
+            Impact->>Impact: 构建 Prompt (含营养数据 + 标签)
+            Impact->>AI: callQwenApi (Prompt: MEAL_IMPACT)
+            AI-->>Impact: 返回 JSON (短中长期影响)
+            Impact-->>Service: ImpactAnalysisResult
+            Service->>Service: 填充到 FoodAnalysisResponse
+            end
+            end
+
+            rect rgb(240, 255, 240)
+            Note over Service, DB: 4. 数据持久化
+            Service->>DBService: saveMealRecord(response)
+            DBService->>DBService: 构建 MealRecord & MealNutrition
+            DBService->>DB: 保存到 meal_records 表
+            DBService->>DB: 保存到 meal_nutrition 表 (级联保存)
+            end
+
+            Service-->>Controller: 返回完整 FoodAnalysisResponse
+            Controller-->>User: ApiResponse.success(data)
+        </div>
+    </div>
+</body>
+
+</html>

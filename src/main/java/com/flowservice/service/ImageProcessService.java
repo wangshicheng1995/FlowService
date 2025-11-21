@@ -20,6 +20,7 @@ public class ImageProcessService {
     private final QwenApiService qwenApiService;
     private final DataProcessService dataProcessService;
     private final MealRecordService mealRecordService;
+    private final ImpactAnalysisService impactAnalysisService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ProcessResult processImage(ProcessRequest request) {
@@ -35,14 +36,14 @@ public class ImageProcessService {
 
             MultiModalConversationResult qwenResult = qwenApiService.callQwenVisionApi(
                     request.getPrompt(),
-                    request.getImageBase64()
-            );
+                    request.getImageBase64());
 
             if (qwenResult == null || qwenResult.getOutput() == null) {
                 throw new RuntimeException("通义千问API返回空响应");
             }
 
-            String originalText = qwenResult.getOutput().getChoices().get(0).getMessage().getContent().get(0).get("text").toString();
+            String originalText = qwenResult.getOutput().getChoices().get(0).getMessage().getContent().get(0)
+                    .get("text").toString();
             String processedText = dataProcessService.processQwenResponse(originalText);
             String summary = dataProcessService.generateSummary(processedText);
 
@@ -100,8 +101,7 @@ public class ImageProcessService {
             // 调用通义千问 API
             MultiModalConversationResult qwenResult = qwenApiService.callQwenVisionApi(
                     request.getPrompt(),
-                    request.getImageBase64()
-            );
+                    request.getImageBase64());
 
             if (qwenResult == null || qwenResult.getOutput() == null) {
                 throw new RuntimeException("通义千问API返回空响应");
@@ -128,6 +128,35 @@ public class ImageProcessService {
 
             log.info("食物分析任务完成: {}, 识别到 {} 种食物, 确定度: {}, 营养均衡: {}",
                     taskId, response.getFoods().size(), response.getConfidence(), response.getIsBalanced());
+
+            // ---------------------------------------------------------
+            // 新增：调用饮食影响分析服务
+            // ---------------------------------------------------------
+            try {
+                if (response.getNutrition() != null) {
+                    // 转换 Nutrition 对象为 MealNutrition 实体对象（或者直接让 ImpactAnalysisService 接收 DTO）
+                    // 这里为了方便，我们直接让 ImpactAnalysisService 接收 DTO 转成的实体，或者修改 ImpactAnalysisService 接收
+                    // DTO
+                    // 简单起见，我们手动映射一下，或者修改 ImpactAnalysisService 入参。
+                    // 鉴于 ImpactAnalysisService 定义的是接收 MealNutrition 实体，我们这里先构造一个临时的实体对象
+                    com.flowservice.entity.MealNutrition mealNutrition = new com.flowservice.entity.MealNutrition();
+                    mealNutrition.setEnergyKcal(response.getNutrition().getEnergyKcal());
+                    mealNutrition.setProteinG(response.getNutrition().getProteinG());
+                    mealNutrition.setFatG(response.getNutrition().getFatG());
+                    mealNutrition.setCarbG(response.getNutrition().getCarbG());
+                    mealNutrition.setFiberG(response.getNutrition().getFiberG());
+                    mealNutrition.setSodiumMg(response.getNutrition().getSodiumMg());
+                    mealNutrition.setSugarG(response.getNutrition().getSugarG());
+                    mealNutrition.setSatFatG(response.getNutrition().getSatFatG());
+
+                    com.flowservice.model.ImpactAnalysisResult impactResult = impactAnalysisService
+                            .analyzeImpact(mealNutrition);
+                    response.setImpactAnalysis(impactResult);
+                }
+            } catch (Exception e) {
+                log.error("调用饮食影响分析服务失败，忽略错误", e);
+            }
+            // ---------------------------------------------------------
 
             // 保存分析结果到数据库
             try {

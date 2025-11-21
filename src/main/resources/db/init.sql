@@ -5,6 +5,9 @@ CREATE DATABASE IF NOT EXISTS flow_db
 
 USE flow_db;
 
+DROP TABLE IF EXISTS meal_nutrition;
+DROP TABLE IF EXISTS meal_records;
+
 -- 创建 meal_records 表
 CREATE TABLE IF NOT EXISTS meal_records (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
@@ -26,6 +29,20 @@ CREATE TABLE IF NOT EXISTS meal_records (
     INDEX idx_eaten_at (eaten_at),
     INDEX idx_health_score (health_score)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用餐记录表';
+
+-- 创建 meal_nutrition 表
+CREATE TABLE IF NOT EXISTS meal_nutrition (
+    meal_id BIGINT PRIMARY KEY COMMENT '关联 meal_records 主键',
+    energy_kcal INT NULL COMMENT '总热量（千卡）',
+    protein_g INT NULL COMMENT '蛋白质（克）',
+    fat_g INT NULL COMMENT '总脂肪（克）',
+    carb_g INT NULL COMMENT '碳水化合物（克）',
+    fiber_g INT NULL COMMENT '膳食纤维（克）',
+    sodium_mg INT NULL COMMENT '钠（毫克）',
+    sugar_g INT NULL COMMENT '糖（克）',
+    sat_fat_g DOUBLE NULL COMMENT '饱和脂肪（克）',
+    CONSTRAINT fk_meal_nutrition_meal_id FOREIGN KEY (meal_id) REFERENCES meal_records (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用餐营养信息表';
 
 -- 创建测试数据库（flow_test），结构与 flow_db 完全一致
 CREATE DATABASE IF NOT EXISTS flow_test

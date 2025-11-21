@@ -120,4 +120,10 @@ public class MealRecord {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * 营养详细信息
+     */
+    @OneToOne(mappedBy = "mealRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MealNutrition mealNutrition;
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -164,8 +165,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .result-container {
@@ -308,6 +314,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -386,6 +393,31 @@
                 <div class="result-section">
                     <div class="result-label">💡 营养评价</div>
                     <div class="result-text" id="nutritionSummary"></div>
+                </div>
+
+                <!-- 饮食影响分析 -->
+                <div class="result-section" id="impactSection" style="display: none;">
+                    <div class="result-label">🏥 健康影响分析</div>
+
+                    <div style="margin-top: 10px;">
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 4px;">⚡️ 短期影响</div>
+                        <div class="result-text" id="shortTermImpact"></div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 4px;">📅 中期影响 (1-4周)</div>
+                        <div class="result-text" id="midTermImpact"></div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 4px;">🗓️ 长期风险 (>3个月)</div>
+                        <div class="result-text" id="longTermImpact"></div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">🏷️ 风险标签</div>
+                        <div class="food-items" id="riskTags"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -568,6 +600,26 @@
             // 显示营养评价
             document.getElementById('nutritionSummary').textContent = data.nutritionSummary;
 
+            // 显示饮食影响分析
+            const impactSection = document.getElementById('impactSection');
+            if (data.impact_analysis) {
+                impactSection.style.display = 'block';
+                document.getElementById('shortTermImpact').textContent = data.impact_analysis.short_term || '无';
+                document.getElementById('midTermImpact').textContent = data.impact_analysis.mid_term || '无';
+                document.getElementById('longTermImpact').textContent = data.impact_analysis.long_term || '无';
+
+                const riskTags = document.getElementById('riskTags');
+                if (data.impact_analysis.risk_tags && data.impact_analysis.risk_tags.length > 0) {
+                    riskTags.innerHTML = data.impact_analysis.risk_tags.map(tag => `
+                        <div class="food-tag" style="background: #ff6b6b;">${tag}</div>
+                    `).join('');
+                } else {
+                    riskTags.innerHTML = '<div class="result-text">无明显风险标签</div>';
+                }
+            } else {
+                impactSection.style.display = 'none';
+            }
+
             resultContainer.style.display = 'block';
             resultContainer.scrollIntoView({ behavior: 'smooth' });
         }
@@ -593,4 +645,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -127,4 +127,10 @@ public class FoodAnalysisResponse {
         @JsonProperty("sat_fat_g")
         private Double satFatG;
     }
+
+    /**
+     * 饮食影响分析结果
+     */
+    @JsonProperty("impact_analysis")
+    private ImpactAnalysisResult impactAnalysis;
 }
