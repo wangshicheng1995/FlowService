@@ -602,15 +602,17 @@
 
             // 显示饮食影响分析
             const impactSection = document.getElementById('impactSection');
-            if (data.impact_analysis) {
+            const impact = data.impact;
+            if (impact) {
                 impactSection.style.display = 'block';
-                document.getElementById('shortTermImpact').textContent = data.impact_analysis.short_term || '无';
-                document.getElementById('midTermImpact').textContent = data.impact_analysis.mid_term || '无';
-                document.getElementById('longTermImpact').textContent = data.impact_analysis.long_term || '无';
+                document.getElementById('shortTermImpact').textContent = impact.shortTerm || impact.short_term || '无';
+                document.getElementById('midTermImpact').textContent = impact.midTerm || impact.mid_term || '无';
+                document.getElementById('longTermImpact').textContent = impact.longTerm || impact.long_term || '无';
 
                 const riskTags = document.getElementById('riskTags');
-                if (data.impact_analysis.risk_tags && data.impact_analysis.risk_tags.length > 0) {
-                    riskTags.innerHTML = data.impact_analysis.risk_tags.map(tag => `
+                const riskTagList = impact.riskTags || impact.risk_tags;
+                if (riskTagList && riskTagList.length > 0) {
+                    riskTags.innerHTML = riskTagList.map(tag => `
                         <div class="food-tag" style="background: #ff6b6b;">${tag}</div>
                     `).join('');
                 } else {

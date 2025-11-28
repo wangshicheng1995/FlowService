@@ -91,21 +91,7 @@ curl -X POST \\
   -F "prompt=请描述这张图片"
 ```
 
-### 2. Base64图片处理接口
-
-**POST** `/api/image/process`
-
-```bash
-curl -X POST \\
-  http://localhost:8080/api/image/process \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "prompt": "请描述这张图片",
-    "imageBase64": "base64-encoded-image-data"
-  }'
-```
-
-### 3. 健康检查
+### 2. 健康检查
 
 **GET** `/api/status/health`
 
@@ -113,7 +99,7 @@ curl -X POST \\
 curl http://localhost:8080/api/status/health
 ```
 
-### 4. 服务信息
+### 3. 服务信息
 
 **GET** `/api/status/info`
 
@@ -123,26 +109,30 @@ curl http://localhost:8080/api/status/info
 
 ## 响应格式
 
-所有API都返回统一的响应格式：
+所有API都返回统一的响应格式，图片上传接口示例：
 
 ```json
 {
   "code": 200,
   "message": "Success",
   "data": {
-    "taskId": "uuid",
-    "originalPrompt": "用户输入的提示词",
-    "processedText": "处理后的文本",
-    "summary": "内容摘要",
-    "metadata": {
-      "fileName": "image.jpg",
-      "mimeType": "image/jpeg",
-      "fileSize": 1234567,
-      "model": "qwen-vl-plus",
-      "tokensUsed": 150,
-      "processingTimeMs": 2500
+    "foods": [
+      { "name": "米饭", "amount_g": 150 },
+      { "name": "鸡胸肉", "amount_g": 120, "cook": "煎" }
+    ],
+    "nutrition": {
+      "energy_kcal": 680,
+      "protein_g": 35,
+      "fat_g": 18,
+      "carb_g": 85,
+      "fiber_g": 6,
+      "sodium_mg": 1200,
+      "sugar_g": 6,
+      "sat_fat_g": 5
     },
-    "processedAt": "2024-01-01T12:00:00"
+    "confidence": 0.92,
+    "isBalanced": true,
+    "nutritionSummary": "结构均衡，略咸"
   }
 }
 ```

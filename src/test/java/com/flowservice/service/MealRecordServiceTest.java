@@ -36,10 +36,19 @@ class MealRecordServiceTest {
     void testSaveMealRecord_Balanced() {
         // Given: 创建一个营养均衡的食物分析结果
         FoodAnalysisResponse analysisResponse = new FoodAnalysisResponse();
-        analysisResponse.setFoodItems(Arrays.asList("牛油果", "全麦吐司", "鸡蛋"));
+
+        FoodAnalysisResponse.FoodItem item1 = new FoodAnalysisResponse.FoodItem("牛油果", 80, "生食");
+        FoodAnalysisResponse.FoodItem item2 = new FoodAnalysisResponse.FoodItem("全麦吐司", 60, "烘烤");
+        FoodAnalysisResponse.FoodItem item3 = new FoodAnalysisResponse.FoodItem("鸡蛋", 50, "水煮");
+
+        analysisResponse.setFoods(Arrays.asList(item1, item2, item3));
         analysisResponse.setConfidence(0.95);
         analysisResponse.setIsBalanced(true);
         analysisResponse.setNutritionSummary("富含健康脂肪和纤维的均衡膳食。");
+
+        // 设置营养数据
+        FoodAnalysisResponse.Nutrition nutrition = new FoodAnalysisResponse.Nutrition(500, 20, 20, 60, 10, 300, 5, 2.0);
+        analysisResponse.setNutrition(nutrition);
 
         // When: 保存用餐记录
         MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
@@ -78,10 +87,17 @@ class MealRecordServiceTest {
     void testSaveMealRecord_Unbalanced() {
         // Given: 创建一个营养不均衡的食物分析结果
         FoodAnalysisResponse analysisResponse = new FoodAnalysisResponse();
-        analysisResponse.setFoodItems(Arrays.asList("白米饭"));
+
+        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem("白米饭", 200, "蒸");
+        analysisResponse.setFoods(Arrays.asList(item));
+
         analysisResponse.setConfidence(0.98);
         analysisResponse.setIsBalanced(false);
         analysisResponse.setNutritionSummary("缺少蛋白质和蔬菜，建议搭配菜品。");
+
+        // 设置营养数据
+        FoodAnalysisResponse.Nutrition nutrition = new FoodAnalysisResponse.Nutrition(300, 5, 1, 70, 1, 10, 1, 0.1);
+        analysisResponse.setNutrition(nutrition);
 
         // When: 保存用餐记录
         MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
@@ -107,10 +123,17 @@ class MealRecordServiceTest {
     void testSaveMealRecord_LowConfidence() {
         // Given: 创建一个低确定度的食物分析结果
         FoodAnalysisResponse analysisResponse = new FoodAnalysisResponse();
-        analysisResponse.setFoodItems(Arrays.asList("绿叶蔬菜"));
+
+        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem("绿叶蔬菜", 100, "炒");
+        analysisResponse.setFoods(Arrays.asList(item));
+
         analysisResponse.setConfidence(0.65);
         analysisResponse.setIsBalanced(false);
         analysisResponse.setNutritionSummary("图片不清晰，建议重新拍照。");
+
+        // 设置营养数据
+        FoodAnalysisResponse.Nutrition nutrition = new FoodAnalysisResponse.Nutrition(100, 2, 5, 10, 3, 50, 1, 0.5);
+        analysisResponse.setNutrition(nutrition);
 
         // When: 保存用餐记录
         MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
@@ -183,9 +206,9 @@ class MealRecordServiceTest {
     @Test
     void testCalculateAverageHealthScore() {
         // Given: 保存多条不同健康分数的记录
-        FoodAnalysisResponse response1 = createSampleResponse("健康餐1", 0.9, true);  // 高分
+        FoodAnalysisResponse response1 = createSampleResponse("健康餐1", 0.9, true); // 高分
         FoodAnalysisResponse response2 = createSampleResponse("健康餐2", 0.85, true); // 高分
-        FoodAnalysisResponse response3 = createSampleResponse("普通餐", 0.7, false);  // 低分
+        FoodAnalysisResponse response3 = createSampleResponse("普通餐", 0.7, false); // 低分
 
         mealRecordService.saveMealRecord(response1, null);
         mealRecordService.saveMealRecord(response2, null);
@@ -259,12 +282,31 @@ class MealRecordServiceTest {
     /**
      * 创建示例分析响应
      */
-    private FoodAnalysisResponse createSampleResponse(String food, double confidence, boolean isBalanced) {
+    private FoodAnalysisResponse createSampleResponse(String foodName, double confidence, boolean isBalanced) {
         FoodAnalysisResponse response = new FoodAnalysisResponse();
-        response.setFoodItems(Arrays.asList(food));
+
+        // 构造 FoodItem 对象列表
+        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem();
+        item.setName(foodName);
+        item.setAmountG(100); // 默认重量
+
+        response.setFoods(Arrays.asList(item));
         response.setConfidence(confidence);
         response.setIsBalanced(isBalanced);
         response.setNutritionSummary(isBalanced ? "营养均衡" : "营养不均衡");
+
+        // 设置默认的营养数据，避免空指针
+        FoodAnalysisResponse.Nutrition nutrition = new FoodAnalysisResponse.Nutrition();
+        nutrition.setEnergyKcal(500);
+        nutrition.setProteinG(20);
+        nutrition.setFatG(15);
+        nutrition.setCarbG(60);
+        nutrition.setFiberG(5);
+        nutrition.setSodiumMg(500);
+        nutrition.setSugarG(5);
+        nutrition.setSatFatG(2.0);
+        response.setNutrition(nutrition);
+
         return response;
     }
 }

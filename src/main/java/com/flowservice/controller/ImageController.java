@@ -5,7 +5,6 @@ import com.flowservice.entity.MealRecord;
 import com.flowservice.model.ApiResponse;
 import com.flowservice.model.FoodAnalysisResponse;
 import com.flowservice.model.ProcessRequest;
-import com.flowservice.model.ProcessResult;
 import com.flowservice.service.ImageProcessService;
 import com.flowservice.service.MealRecordService;
 import lombok.RequiredArgsConstructor;
@@ -68,26 +67,6 @@ public class ImageController {
         } catch (Exception e) {
             log.error("食物图片分析失败", e);
             return ApiResponse.error("食物图片分析失败: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/process")
-    public ApiResponse<ProcessResult> processImageWithBase64(@RequestBody ProcessRequest request) {
-        try {
-            log.info("接收到Base64图片处理请求");
-
-            if (request.getImageBase64() == null || request.getImageBase64().isEmpty()) {
-                return ApiResponse.error(400, "图片数据不能为空");
-            }
-
-            ProcessResult result = imageProcessService.processImage(request);
-
-            log.info("图片处理完成: taskId={}", result.getTaskId());
-            return ApiResponse.success("图片处理成功", result);
-
-        } catch (Exception e) {
-            log.error("图片处理失败", e);
-            return ApiResponse.error("图片处理失败: " + e.getMessage());
         }
     }
 

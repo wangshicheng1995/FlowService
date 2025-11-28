@@ -34,7 +34,6 @@ public class StatusController {
         info.put("version", "1.0.0");
         info.put("endpoints", new String[]{
                 "POST /api/image/upload - 上传图片并处理",
-                "POST /api/image/process - 处理Base64图片",
                 "GET /api/status/health - 健康检查",
                 "GET /api/status/info - 服务信息"
         });

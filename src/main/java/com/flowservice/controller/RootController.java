@@ -20,7 +20,6 @@ public class RootController {
         data.put("description", "图片处理服务，集成阿里通义千问模型");
         data.put("endpoints", Map.of(
                 "图片上传", "POST /api/image/upload",
-                "Base64处理", "POST /api/image/process",
                 "健康检查", "GET /api/status/health",
                 "服务信息", "GET /api/status/info"
         ));
