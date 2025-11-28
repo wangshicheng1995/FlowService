@@ -23,6 +23,27 @@ public class HealthTagCalculator {
         return r;
     }
 
+    public static Set<NutritionTag> calcTags(com.flowservice.entity.MealRecord record) {
+        Set<NutritionTag> tags = new HashSet<>();
+
+        // 1. Calculate tags from nutrition info if available
+        if (record.getMealNutrition() != null) {
+            tags.addAll(calcTags(record.getMealNutrition()));
+        }
+
+        // 2. Add BALANCED_MEAL if isBalanced is true
+        if (Boolean.TRUE.equals(record.getIsBalanced())) {
+            tags.add(NutritionTag.BALANCED_MEAL);
+        }
+
+        // 3. Add GENERIC_HIGH_RISK if riskLevel is HIGH
+        if ("HIGH".equalsIgnoreCase(record.getRiskLevel())) {
+            tags.add(NutritionTag.GENERIC_HIGH_RISK);
+        }
+
+        return tags;
+    }
+
     public static Set<NutritionTag> calcTags(MealNutrition n) {
         Set<NutritionTag> tags = new HashSet<>();
 
@@ -72,6 +93,31 @@ public class HealthTagCalculator {
             tags.add(NutritionTag.MEDIUM_FIBER);
         } else {
             tags.add(NutritionTag.HIGH_FIBER);
+        }
+
+        // ---------- 新增保护标签计算逻辑 (MVP 简化版) ----------
+
+        // HIGH_FIBER_MEAL: 纤维 > 10g
+        if (fiber > 10) {
+            tags.add(NutritionTag.HIGH_FIBER_MEAL);
+        }
+
+        // VEGETABLE_RICH: 纤维 > 8g 且 热量 < 400 (假设)
+        double energy = n.getEnergyKcal() != null ? n.getEnergyKcal() : 0;
+        if (fiber > 8 && energy < 400) {
+            tags.add(NutritionTag.VEGETABLE_RICH);
+        }
+
+        // LEAN_PROTEIN: 蛋白质 > 20g 且 脂肪 < 10g
+        double protein = n.getProteinG() != null ? n.getProteinG() : 0;
+        double fat = n.getFatG() != null ? n.getFatG() : 0;
+        if (protein > 20 && fat < 10) {
+            tags.add(NutritionTag.LEAN_PROTEIN);
+        }
+
+        // BALANCED_MEAL: 蛋白质 > 15g, 纤维 > 5g, 脂肪 < 20g
+        if (protein > 15 && fiber > 5 && fat < 20) {
+            tags.add(NutritionTag.BALANCED_MEAL);
         }
 
         return tags;

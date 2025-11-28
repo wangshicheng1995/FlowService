@@ -51,3 +51,17 @@ CREATE DATABASE IF NOT EXISTS flow_test
 
 -- 若测试库尚未建表，则复制主库表结构
 CREATE TABLE IF NOT EXISTS flow_test.meal_records LIKE flow_db.meal_records;
+
+-- 创建 food_stress_score 表
+CREATE TABLE IF NOT EXISTS food_stress_score (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
+    user_id BIGINT NOT NULL COMMENT '用户 ID',
+    score_days DATE NOT NULL COMMENT '评分日期',
+    score INT NOT NULL COMMENT '健康压力值 (0-100)',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY idx_user_date (user_id, score_days)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='健康压力值记录表';
+
+-- 同步测试库结构
+CREATE TABLE IF NOT EXISTS flow_test.food_stress_score LIKE flow_db.food_stress_score;

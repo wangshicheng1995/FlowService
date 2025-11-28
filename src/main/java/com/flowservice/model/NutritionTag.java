@@ -26,5 +26,18 @@ public enum NutritionTag {
     VERY_LOW_FIBER,
     LOW_FIBER,
     MEDIUM_FIBER,
-    HIGH_FIBER
+    HIGH_FIBER,
+
+    // 风险标签 (新增)
+    GENERIC_HIGH_RISK, // 通用高风险（当 riskLevel=HIGH 但无详细营养数据时）
+    HIGH_ENERGY_DENSE,
+    PROCESSED_MEAT,
+    DEEP_FRIED,
+    SUGARY_DRINK,
+
+    // 保护标签 (新增)
+    HIGH_FIBER_MEAL,
+    VEGETABLE_RICH,
+    LEAN_PROTEIN,
+    BALANCED_MEAL
 }
