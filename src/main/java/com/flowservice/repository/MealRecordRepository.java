@@ -28,9 +28,9 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
     /**
      * 根据用户 ID 和时间范围查询用餐记录
      *
-     * @param userId 用户 ID
+     * @param userId    用户 ID
      * @param startTime 开始时间
-     * @param endTime 结束时间
+     * @param endTime   结束时间
      * @return 用餐记录列表
      */
     List<MealRecord> findByUserIdAndEatenAtBetweenOrderByEatenAtDesc(
@@ -39,7 +39,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
     /**
      * 根据用户 ID 和风险等级查询用餐记录
      *
-     * @param userId 用户 ID
+     * @param userId    用户 ID
      * @param riskLevel 风险等级
      * @return 用餐记录列表
      */
@@ -58,7 +58,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * 查询用户最近 N 条用餐记录
      *
      * @param userId 用户 ID
-     * @param limit 记录数量
+     * @param limit  记录数量
      * @return 用餐记录列表
      */
     @Query("SELECT m FROM MealRecord m WHERE m.userId = :userId ORDER BY m.eatenAt DESC LIMIT :limit")
@@ -79,4 +79,14 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @return 均衡用餐记录数量
      */
     long countByUserIdAndIsBalanced(Long userId, Boolean isBalanced);
+
+    /**
+     * 根据用户 ID 和时间范围查询用餐记录（用于热量统计）
+     *
+     * @param userId    用户 ID
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 用餐记录列表
+     */
+    List<MealRecord> findByUserIdAndEatenAtBetween(Long userId, LocalDateTime startTime, LocalDateTime endTime);
 }

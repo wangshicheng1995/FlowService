@@ -107,6 +107,47 @@ curl http://localhost:8080/api/status/health
 curl http://localhost:8080/api/status/info
 ```
 
+### 4. 热量统计接口
+
+**GET** `/api/home/calories`
+
+获取用户在指定时间范围内的食物总热量（默认获取当天的食物总热量）。
+
+**请求参数：**
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| userId | Long | 是 | 用户 ID |
+| startDate | String | 否 | 开始日期，格式：yyyy-MM-dd，默认当天 |
+| endDate | String | 否 | 结束日期，格式：yyyy-MM-dd，默认当天 |
+
+**示例请求：**
+
+```bash
+# 查询当天热量
+curl "http://localhost:8080/api/home/calories?userId=1"
+
+# 查询指定日期范围的热量
+curl "http://localhost:8080/api/home/calories?userId=1&startDate=2025-12-01&endDate=2025-12-05"
+```
+
+**响应示例：**
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": {
+    "userId": 1,
+    "startTime": "2025-12-05T00:00:00",
+    "endTime": "2025-12-05T23:59:59.999999999",
+    "totalCalories": 1500,
+    "mealCount": 3,
+    "averageCaloriesPerMeal": 500.0
+  }
+}
+```
+
 ## 响应格式
 
 所有API都返回统一的响应格式，图片上传接口示例：
