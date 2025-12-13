@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 从 Spring 配置中读取属性 -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="flowservice"/>
+    <springProperty scope="context" name="LOKI_URL" source="loki.url" defaultValue="http://localhost:3100"/>
+
+    <!-- 控制台输出（保留原有功能） -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Loki Appender - 推送日志到 Grafana Loki -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <!-- 批量发送配置 -->
+        <batchMaxItems>1000</batchMaxItems>
+        <batchMaxBytes>4194304</batchMaxBytes>
+        <batchTimeoutMs>10000</batchTimeoutMs>
+
+        <http>
+            <url>${LOKI_URL}/loki/api/v1/push</url>
+            <connectionTimeoutMs>5000</connectionTimeoutMs>
+            <requestTimeoutMs>15000</requestTimeoutMs>
+        </http>
+
+        <format>
+            <label>
+                <!-- 日志标签，便于在 Grafana 中查询过滤 -->
+                <pattern>app=${APP_NAME},host=${HOSTNAME},level=%level</pattern>
+            </label>
+            <message>
+                <!-- 日志消息格式 -->
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </message>
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+
+    <!-- 异步 Loki Appender（提高性能，避免阻塞主线程） -->
+    <appender name="ASYNC_LOKI" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOKI"/>
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <!-- 生产环境配置：同时输出到控制台和 Loki -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_LOKI"/>
+        </root>
+
+        <!-- FlowService 包使用 DEBUG 级别 -->
+        <logger name="com.flowservice" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_LOKI"/>
+        </logger>
+    </springProfile>
+
+    <!-- 开发环境配置：仅输出到控制台（可选启用 Loki） -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <!-- 开发环境也可以启用 Loki，取消下面注释即可 -->
+            <!-- <appender-ref ref="ASYNC_LOKI"/> -->
+        </root>
+
+        <logger name="com.flowservice" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <!-- Hibernate SQL 日志（仅开发环境） -->
+        <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+    </springProfile>
+</configuration>

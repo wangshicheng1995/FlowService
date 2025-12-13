@@ -30,3 +30,7 @@ logging:
     name: /var/log/flowservice/application.log
     max-size: 100MB
     max-history: 30
+
+# Grafana Loki 配置
+loki:
+  url: http://localhost:3100

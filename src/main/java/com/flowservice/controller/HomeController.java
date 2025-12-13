@@ -2,6 +2,7 @@ package com.flowservice.controller;
 
 import com.flowservice.model.ApiResponse;
 import com.flowservice.model.CalorieStatisticsResponse;
+import com.flowservice.model.DashboardDataResponse;
 import com.flowservice.model.HealthStressScoreResponse;
 import com.flowservice.service.HealthStressService;
 import com.flowservice.service.HomeService;
@@ -30,6 +31,28 @@ public class HomeController {
 
     private final HealthStressService healthStressService;
     private final HomeService homeService;
+
+    /**
+     * 获取首页仪表盘聚合数据
+     * 一次性返回首页需要的所有后端数据，减少前端多次请求
+     *
+     * @param userId 用户 ID
+     * @param date   查询日期（可选，默认为当天）
+     * @return 仪表盘聚合数据
+     */
+    @Operation(summary = "获取首页仪表盘数据", description = "聚合接口，一次返回首页需要的所有数据\n\n" +
+            "当前返回的数据：\n" +
+            "- stressScore: 食物压力分数（0-100）\n" +
+            "- totalCalories: 当日总热量\n" +
+            "- mealCount: 当日就餐次数\n\n" +
+            "后续将添加：营养均衡度、糖负荷、盐负荷、油脂摄入等指标")
+    @GetMapping("/dashboard")
+    public ApiResponse<DashboardDataResponse> getDashboardData(
+            @Parameter(description = "用户 ID，支持 Apple ID 格式", required = true, example = "000514.xxx.1422") @RequestParam String userId,
+            @Parameter(description = "查询日期，格式 yyyy-MM-dd，默认为当天", example = "2025-12-13") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        DashboardDataResponse response = homeService.getDashboardData(userId, date);
+        return ApiResponse.success("查询成功", response);
+    }
 
     /**
      * 获取健康压力分数

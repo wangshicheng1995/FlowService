@@ -43,7 +43,7 @@ public class ImageController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<FoodAnalysisResponse> uploadImage(
             @Parameter(description = "食物图片文件", required = true) @RequestParam("file") MultipartFile file,
-            @Parameter(description = "用户 ID，支持 Apple ID 格式", example = "000514.xxx.1422") @RequestParam(value = "userId", required = false) String userId) {
+            @Parameter(description = "用户 ID（必填），支持 Apple ID 格式", required = true, example = "000514.xxx.1422") @RequestParam("userId") String userId) {
 
         try {
             log.info("接收到食物图片上传请求: fileName={}, size={}, contentType={}, userId={}",

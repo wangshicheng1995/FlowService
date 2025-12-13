@@ -3,7 +3,9 @@ package com.flowservice.service.impl;
 import com.flowservice.entity.MealNutrition;
 import com.flowservice.entity.MealRecord;
 import com.flowservice.model.CalorieStatisticsResponse;
+import com.flowservice.model.DashboardDataResponse;
 import com.flowservice.repository.MealRecordRepository;
+import com.flowservice.service.HealthStressService;
 import com.flowservice.service.HomeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,80 @@ import java.util.List;
 public class HomeServiceImpl implements HomeService {
 
     private final MealRecordRepository mealRecordRepository;
+    private final HealthStressService healthStressService;
+
+    /**
+     * 获取首页仪表盘聚合数据
+     * 一次性返回首页需要的所有后端数据，减少前端多次请求
+     *
+     * @param userId 用户 ID
+     * @param date   查询日期（可选，默认为当天）
+     * @return 仪表盘聚合数据
+     */
+    @Override
+    public DashboardDataResponse getDashboardData(String userId, LocalDate date) {
+        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+        log.info("获取首页仪表盘数据: userId={}, date={}", userId, targetDate);
+
+        DashboardDataResponse response = new DashboardDataResponse();
+        response.setUserId(userId);
+        response.setDate(targetDate);
+
+        // 1. 获取食物压力分数（调用已有的 HealthStressService）
+        try {
+            int stressScore = healthStressService.calculateDailyScore(userId, targetDate);
+            response.setStressScore(stressScore);
+            log.debug("压力分数获取成功: stressScore={}", stressScore);
+        } catch (Exception e) {
+            log.error("获取压力分数失败，使用默认值 40", e);
+            response.setStressScore(40); // 默认值
+        }
+
+        // 2. 获取当日总热量（调用已有的 getTotalCalories 方法）
+        try {
+            CalorieStatisticsResponse calorieStats = getTotalCalories(userId, targetDate, targetDate);
+            response.setTotalCalories(calorieStats.getTotalCalories());
+            response.setMealCount(calorieStats.getMealCount());
+            log.debug("热量统计获取成功: totalCalories={}, mealCount={}",
+                    calorieStats.getTotalCalories(), calorieStats.getMealCount());
+        } catch (Exception e) {
+            log.error("获取热量统计失败，使用默认值", e);
+            response.setTotalCalories(0);
+            response.setMealCount(0);
+        }
+
+        // ==================== TODO: 待开发的指标 ====================
+
+        // TODO: 3. 获取营养均衡指数
+        // response.setNutritionBalanceIndex(calculateNutritionBalanceIndex(userId,
+        // targetDate));
+
+        // TODO: 4. 获取饮食质量指数
+        // response.setDietQualityIndex(calculateDietQualityIndex(userId, targetDate));
+
+        // TODO: 5. 获取糖负荷
+        // response.setSugarLoadG(calculateSugarLoad(userId, targetDate));
+
+        // TODO: 6. 获取盐负荷
+        // response.setSodiumLoadMg(calculateSodiumLoad(userId, targetDate));
+
+        // TODO: 7. 获取油脂摄入
+        // response.setFatIntakeG(calculateFatIntake(userId, targetDate));
+
+        // TODO: 8. 获取蛋白质摄入
+        // response.setProteinIntakeG(calculateProteinIntake(userId, targetDate));
+
+        // TODO: 9. 获取膳食纤维摄入
+        // response.setFiberIntakeG(calculateFiberIntake(userId, targetDate));
+
+        // TODO: 10. 获取饱和脂肪摄入
+        // response.setSatFatIntakeG(calculateSatFatIntake(userId, targetDate));
+
+        log.info("首页仪表盘数据获取完成: userId={}, stressScore={}, totalCalories={}, mealCount={}",
+                userId, response.getStressScore(), response.getTotalCalories(), response.getMealCount());
+
+        return response;
+    }
 
     /**
      * 获取用户在指定时间范围内的食物总热量
