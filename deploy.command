@@ -249,33 +249,37 @@ if [ "$SERVICE_EXISTS" -gt 0 ]; then
     
     if [ "$SERVICE_STATUS" == "active" ]; then
         print_warning "检测到服务正在运行，准备停止..."
-        ssh "$SERVER_USER@$SERVER_IP" "systemctl stop $SERVICE_NAME"
         
-        # 计算循环次数（每次 2 秒）
-        LOOP_COUNT=$((STOP_WAIT_TIMEOUT / 2))
+        # 使用单次 SSH 连接执行停止和等待（避免多次 SSH 连接开销）
+        STOP_RESULT=$(ssh "$SERVER_USER@$SERVER_IP" "
+            systemctl stop $SERVICE_NAME
+            
+            # 在远程服务器上循环检查，最多等待 30 秒
+            for i in \$(seq 1 15); do
+                STATUS=\$(systemctl is-active $SERVICE_NAME 2>/dev/null || echo 'inactive')
+                if [ \"\$STATUS\" == 'inactive' ] || [ \"\$STATUS\" == 'failed' ]; then
+                    echo 'STOPPED'
+                    exit 0
+                fi
+                sleep 2
+            done
+            echo 'TIMEOUT'
+        ")
         
-        # 循环检查服务状态
-        print_info "等待服务停止（最长 ${STOP_WAIT_TIMEOUT} 秒）..."
-        STOPPED=false
-        for i in $(seq 1 $LOOP_COUNT); do
-            NEW_STATUS=$(ssh "$SERVER_USER@$SERVER_IP" "systemctl is-active $SERVICE_NAME || echo 'inactive'")
-            if [ "$NEW_STATUS" == "inactive" ] || [ "$NEW_STATUS" == "failed" ]; then
-                STOPPED=true
-                break
-            fi
-            echo -n "."
-            sleep 2
-        done
-        echo ""
-        
-        if [ "$STOPPED" == "true" ]; then
+        if [ "$STOP_RESULT" == "STOPPED" ]; then
             print_success "服务已停止"
         else
             print_warning "服务停止超时，尝试强制终止..."
             
-            # 尝试强制终止 Java 进程
-            ssh "$SERVER_USER@$SERVER_IP" "pkill -9 -f 'flowservice.*\.jar' || true"
-            sleep 3
+            # 使用更精确的进程匹配，只杀掉 flowservice.jar 进程
+            ssh "$SERVER_USER@$SERVER_IP" "
+                # 获取 flowservice 进程 PID
+                PID=\$(pgrep -f '/opt/flowservice/flowservice.jar' || true)
+                if [ -n \"\$PID\" ]; then
+                    kill -9 \$PID 2>/dev/null || true
+                    sleep 2
+                fi
+            "
             
             # 再次检查
             FINAL_STATUS=$(ssh "$SERVER_USER@$SERVER_IP" "systemctl is-active $SERVICE_NAME || echo 'inactive'")
@@ -288,7 +292,7 @@ if [ "$SERVICE_EXISTS" -gt 0 ]; then
             fi
         fi
     else
-        print_info "服务未运行，无需停止"
+        print_info "服务未运行（状态: $SERVICE_STATUS），无需停止"
     fi
 else
     print_info "服务不存在（首次部署）"

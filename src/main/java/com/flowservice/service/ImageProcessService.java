@@ -27,11 +27,12 @@ public class ImageProcessService {
      * 同时将分析结果保存到数据库
      *
      * @param request 处理请求（包含图片 Base64 和 Prompt）
+     * @param userId  用户 ID（可选，用于关联用餐记录）
      * @return 食物分析结果
      */
-    public FoodAnalysisResponse processFoodAnalysis(ProcessRequest request) {
+    public FoodAnalysisResponse processFoodAnalysis(ProcessRequest request, String userId) {
         String taskId = UUID.randomUUID().toString();
-        log.info("开始处理食物图片分析任务: {}", taskId);
+        log.info("开始处理食物图片分析任务: {}, userId: {}", taskId, userId);
 
         try {
             // 验证图片数据
@@ -105,8 +106,8 @@ public class ImageProcessService {
 
             // 保存分析结果到数据库
             try {
-                mealRecordService.saveMealRecord(response, null);
-                log.info("食物分析结果已保存到数据库");
+                mealRecordService.saveMealRecord(response, null, userId);
+                log.info("食物分析结果已保存到数据库, userId: {}", userId);
             } catch (Exception e) {
                 log.error("保存用餐记录到数据库失败，但继续返回 AI 分析结果", e);
                 // 不抛出异常，继续返回 AI 分析结果

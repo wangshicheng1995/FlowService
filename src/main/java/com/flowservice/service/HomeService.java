@@ -18,5 +18,5 @@ public interface HomeService {
      * @param endDate   结束日期（可选，默认为当天）
      * @return 热量统计结果
      */
-    CalorieStatisticsResponse getTotalCalories(Long userId, LocalDate startDate, LocalDate endDate);
+    CalorieStatisticsResponse getTotalCalories(String userId, LocalDate startDate, LocalDate endDate);
 }

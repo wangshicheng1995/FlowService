@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface FoodStressScoreRepository extends JpaRepository<FoodStressScore, Long> {
 
-    Optional<FoodStressScore> findByUserIdAndScoreDays(Long userId, LocalDate scoreDays);
+    Optional<FoodStressScore> findByUserIdAndScoreDays(String userId, LocalDate scoreDays);
 }

@@ -33,10 +33,10 @@ public class MealRecord {
     private Long id;
 
     /**
-     * 用户 ID（前期可以先写死一个 ID）
+     * 用户 ID（支持 Apple ID 格式，如 000514.xxx.1422）
      */
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "user_id", nullable = false, length = 64)
+    private String userId;
 
     /**
      * 吃这顿饭的时间（前端上传）

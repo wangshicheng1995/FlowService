@@ -17,10 +17,10 @@ import java.time.LocalDateTime;
 public class CalorieStatisticsResponse {
 
     /**
-     * 用户 ID
+     * 用户 ID（支持 Apple ID 格式）
      */
     @JsonProperty("userId")
-    private Long userId;
+    private String userId;
 
     /**
      * 统计开始时间

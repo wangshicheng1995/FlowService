@@ -53,7 +53,7 @@ public class HealthStressService {
      * @return 当天的分数 (0-100)
      */
     @Transactional
-    public int calculateDailyScore(Long userId, LocalDate date) {
+    public int calculateDailyScore(String userId, LocalDate date) {
         // 1. 查询当天的所有用餐记录
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
@@ -94,7 +94,7 @@ public class HealthStressService {
     /**
      * 保存或更新分数
      */
-    private int saveOrUpdateScore(Long userId, LocalDate date, int score) {
+    private int saveOrUpdateScore(String userId, LocalDate date, int score) {
         Optional<FoodStressScore> existing = foodStressScoreRepository.findByUserIdAndScoreDays(userId, date);
         FoodStressScore entity;
         if (existing.isPresent()) {

@@ -23,7 +23,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @param userId 用户 ID
      * @return 用餐记录列表
      */
-    List<MealRecord> findByUserIdOrderByEatenAtDesc(Long userId);
+    List<MealRecord> findByUserIdOrderByEatenAtDesc(String userId);
 
     /**
      * 根据用户 ID 和时间范围查询用餐记录
@@ -34,7 +34,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @return 用餐记录列表
      */
     List<MealRecord> findByUserIdAndEatenAtBetweenOrderByEatenAtDesc(
-            Long userId, LocalDateTime startTime, LocalDateTime endTime);
+            String userId, LocalDateTime startTime, LocalDateTime endTime);
 
     /**
      * 根据用户 ID 和风险等级查询用餐记录
@@ -43,7 +43,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @param riskLevel 风险等级
      * @return 用餐记录列表
      */
-    List<MealRecord> findByUserIdAndRiskLevelOrderByEatenAtDesc(Long userId, String riskLevel);
+    List<MealRecord> findByUserIdAndRiskLevelOrderByEatenAtDesc(String userId, String riskLevel);
 
     /**
      * 查询用户的平均健康分数
@@ -52,7 +52,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @return 平均健康分数
      */
     @Query("SELECT AVG(m.healthScore) FROM MealRecord m WHERE m.userId = :userId AND m.healthScore IS NOT NULL")
-    Double calculateAverageHealthScore(@Param("userId") Long userId);
+    Double calculateAverageHealthScore(@Param("userId") String userId);
 
     /**
      * 查询用户最近 N 条用餐记录
@@ -62,7 +62,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @return 用餐记录列表
      */
     @Query("SELECT m FROM MealRecord m WHERE m.userId = :userId ORDER BY m.eatenAt DESC LIMIT :limit")
-    List<MealRecord> findRecentMealsByUserId(@Param("userId") Long userId, @Param("limit") int limit);
+    List<MealRecord> findRecentMealsByUserId(@Param("userId") String userId, @Param("limit") int limit);
 
     /**
      * 统计用户的用餐记录总数
@@ -70,7 +70,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @param userId 用户 ID
      * @return 记录总数
      */
-    long countByUserId(Long userId);
+    long countByUserId(String userId);
 
     /**
      * 查询用户营养均衡的用餐记录数量
@@ -78,7 +78,7 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @param userId 用户 ID
      * @return 均衡用餐记录数量
      */
-    long countByUserIdAndIsBalanced(Long userId, Boolean isBalanced);
+    long countByUserIdAndIsBalanced(String userId, Boolean isBalanced);
 
     /**
      * 根据用户 ID 和时间范围查询用餐记录（用于热量统计）
@@ -88,5 +88,5 @@ public interface MealRecordRepository extends JpaRepository<MealRecord, Long> {
      * @param endTime   结束时间
      * @return 用餐记录列表
      */
-    List<MealRecord> findByUserIdAndEatenAtBetween(Long userId, LocalDateTime startTime, LocalDateTime endTime);
+    List<MealRecord> findByUserIdAndEatenAtBetween(String userId, LocalDateTime startTime, LocalDateTime endTime);
 }

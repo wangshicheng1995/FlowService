@@ -65,7 +65,7 @@ class HealthStressServiceTest {
 
     @Test
     void testCalculateDailyScore_NoMeals() {
-        Long userId = 100L;
+        String userId = "test_100";
         LocalDate date = LocalDate.now();
 
         int score = healthStressService.calculateDailyScore(userId, date);
@@ -80,7 +80,7 @@ class HealthStressServiceTest {
 
     @Test
     void testCalculateDailyScore_WithMeals() {
-        Long userId = 101L;
+        String userId = "test_101";
         LocalDate date = LocalDate.now();
 
         // Meal 1: Unhealthy (+20) -> Score 40 + 20 = 60
@@ -111,7 +111,7 @@ class HealthStressServiceTest {
 
     @Test
     void testCalculateDailyScore_BalancedMeal_ShouldBeProtective() {
-        Long userId = 103L;
+        String userId = "test_103";
         LocalDate date = LocalDate.now();
 
         // Create a meal that is marked as isBalanced=true, but macros might not trigger
@@ -140,7 +140,7 @@ class HealthStressServiceTest {
         assertEquals(30, score, "Balanced meal should reduce stress score by 10");
     }
 
-    private void createMealWithBalancedFlag(Long userId, LocalDateTime time, int sodium, int sugar, int satFat,
+    private void createMealWithBalancedFlag(String userId, LocalDateTime time, int sodium, int sugar, int satFat,
             int fiber, boolean isBalanced) {
         MealRecord record = new MealRecord();
         record.setUserId(userId);
@@ -163,7 +163,7 @@ class HealthStressServiceTest {
 
     @Test
     void testCalculateDailyScore_Integration() {
-        Long userId = 102L;
+        String userId = "test_102";
         LocalDate date = LocalDate.now();
 
         // Meal 1: Risk (+10) -> Score 40 + 10 = 50
@@ -188,7 +188,7 @@ class HealthStressServiceTest {
         assertEquals(50, saved.get().getScore());
     }
 
-    private void createMeal(Long userId, LocalDateTime time, int sodium, int sugar, int satFat, int fiber) {
+    private void createMeal(String userId, LocalDateTime time, int sodium, int sugar, int satFat, int fiber) {
         MealRecord record = new MealRecord();
         record.setUserId(userId);
         record.setEatenAt(time);
@@ -209,7 +209,7 @@ class HealthStressServiceTest {
 
     @Test
     void testCalculateDailyScore_HighRiskMeal_ShouldBePenalized() {
-        Long userId = 104L;
+        String userId = "test_104";
         LocalDate date = LocalDate.now();
 
         // Create a meal with HIGH risk level but NO nutrition info (or empty macros)
@@ -231,7 +231,7 @@ class HealthStressServiceTest {
         assertEquals(50, score, "High risk meal should increase stress score by at least 10");
     }
 
-    private void createMealWithRiskLevel(Long userId, LocalDateTime time, String riskLevel) {
+    private void createMealWithRiskLevel(String userId, LocalDateTime time, String riskLevel) {
         MealRecord record = new MealRecord();
         record.setUserId(userId);
         record.setEatenAt(time);

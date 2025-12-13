@@ -16,10 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Base64;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @Slf4j
 @RestController
 @RequestMapping("/image")
 @RequiredArgsConstructor
+@Tag(name = "图片上传", description = "食物图片上传与 AI 分析相关接口")
 public class ImageController {
 
     private final ImageProcessService imageProcessService;
@@ -32,12 +37,17 @@ public class ImageController {
      * @param file 上传的图片文件
      * @return 食物分析结果
      */
+    @Operation(summary = "上传食物图片", description = "上传食物图片，使用通义千问 AI 识别食物并分析营养成分。\n\n" +
+            "支持的图片格式: JPG, PNG, WEBP\n" +
+            "最大文件大小: 10MB")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<FoodAnalysisResponse> uploadImage(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<FoodAnalysisResponse> uploadImage(
+            @Parameter(description = "食物图片文件", required = true) @RequestParam("file") MultipartFile file,
+            @Parameter(description = "用户 ID，支持 Apple ID 格式", example = "000514.xxx.1422") @RequestParam(value = "userId", required = false) String userId) {
 
         try {
-            log.info("接收到食物图片上传请求: fileName={}, size={}, contentType={}",
-                    file.getOriginalFilename(), file.getSize(), file.getContentType());
+            log.info("接收到食物图片上传请求: fileName={}, size={}, contentType={}, userId={}",
+                    file.getOriginalFilename(), file.getSize(), file.getContentType(), userId);
 
             if (file.isEmpty()) {
                 return ApiResponse.error(400, "上传文件不能为空");
@@ -58,7 +68,7 @@ public class ImageController {
             request.setMimeType(file.getContentType());
 
             // 处理食物图片并解析 AI 返回的 JSON
-            FoodAnalysisResponse result = imageProcessService.processFoodAnalysis(request);
+            FoodAnalysisResponse result = imageProcessService.processFoodAnalysis(request, userId);
 
             log.info("食物图片分析完成: foods={}, confidence={}, isBalanced={}",
                     result.getFoods(), result.getConfidence(), result.getIsBalanced());
@@ -70,6 +80,7 @@ public class ImageController {
         }
     }
 
+    @Operation(summary = "健康检查", description = "检查服务是否正常运行")
     @GetMapping("/health")
     public ApiResponse<String> health() {
         return ApiResponse.success("服务运行正常");
@@ -81,11 +92,12 @@ public class ImageController {
      * @param userId 用户 ID（可选，默认使用 DEFAULT_USER_ID）
      * @return 用餐记录列表
      */
+    @Operation(summary = "查询用餐记录", description = "查询指定用户的所有用餐记录，按时间倒序排列")
     @GetMapping("/meals")
     public ApiResponse<List<MealRecord>> getMealRecords(
-            @RequestParam(value = "userId", required = false) Long userId) {
+            @Parameter(description = "用户 ID，支持 Apple ID 格式", example = "000514.xxx.1422") @RequestParam(value = "userId", required = false) String userId) {
         try {
-            Long queryUserId = userId != null ? userId : MealRecordService.getDefaultUserId();
+            String queryUserId = userId != null ? userId : MealRecordService.getDefaultUserId();
             log.info("查询用户的用餐记录: userId={}", queryUserId);
 
             List<MealRecord> records = mealRecordService.getMealRecordsByUserId(queryUserId);
@@ -103,8 +115,10 @@ public class ImageController {
      * @param id 记录 ID
      * @return 用餐记录
      */
+    @Operation(summary = "查询单条用餐记录", description = "根据记录 ID 查询单条用餐记录的详细信息")
     @GetMapping("/meals/{id}")
-    public ApiResponse<MealRecord> getMealRecordById(@PathVariable Long id) {
+    public ApiResponse<MealRecord> getMealRecordById(
+            @Parameter(description = "记录 ID", required = true, example = "1") @PathVariable Long id) {
         try {
             log.info("查询用餐记录: id={}", id);
             MealRecord record = mealRecordService.getMealRecordById(id);
@@ -122,11 +136,12 @@ public class ImageController {
      * @param userId 用户 ID（可选）
      * @return 平均健康分数
      */
+    @Operation(summary = "查询平均健康分数", description = "查询用户所有用餐记录的平均健康分数")
     @GetMapping("/meals/stats/average-score")
     public ApiResponse<Double> getAverageHealthScore(
-            @RequestParam(value = "userId", required = false) Long userId) {
+            @Parameter(description = "用户 ID", example = "000514.xxx.1422") @RequestParam(value = "userId", required = false) String userId) {
         try {
-            Long queryUserId = userId != null ? userId : MealRecordService.getDefaultUserId();
+            String queryUserId = userId != null ? userId : MealRecordService.getDefaultUserId();
             Double avgScore = mealRecordService.getAverageHealthScore(queryUserId);
             return ApiResponse.success("查询成功", avgScore);
 

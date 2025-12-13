@@ -26,7 +26,7 @@ public class MealRecordService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 默认用户 ID（前期 hardcode）
-    private static final Long DEFAULT_USER_ID = 1L;
+    private static final String DEFAULT_USER_ID = "default_user";
 
     /**
      * 保存用餐记录
@@ -34,15 +34,16 @@ public class MealRecordService {
      *
      * @param analysisResponse AI 分析结果
      * @param imageUrl         图片 URL（可选）
+     * @param userId           用户 ID（可选，为空时使用默认值）
      * @return 保存后的用餐记录
      */
     @Transactional
-    public MealRecord saveMealRecord(FoodAnalysisResponse analysisResponse, String imageUrl) {
+    public MealRecord saveMealRecord(FoodAnalysisResponse analysisResponse, String imageUrl, String userId) {
         try {
             MealRecord record = new MealRecord();
 
-            // 设置基本字段
-            record.setUserId(DEFAULT_USER_ID);
+            // 设置基本字段（如果 userId 为空则使用默认值）
+            record.setUserId(userId != null && !userId.trim().isEmpty() ? userId : DEFAULT_USER_ID);
             record.setEatenAt(LocalDateTime.now());
             record.setSourceType("PHOTO");
             record.setImageUrl(imageUrl);
@@ -99,7 +100,7 @@ public class MealRecordService {
      * @param userId 用户 ID
      * @return 用餐记录列表
      */
-    public List<MealRecord> getMealRecordsByUserId(Long userId) {
+    public List<MealRecord> getMealRecordsByUserId(String userId) {
         log.info("查询用户的用餐记录: userId={}", userId);
         return mealRecordRepository.findByUserIdOrderByEatenAtDesc(userId);
     }
@@ -130,7 +131,7 @@ public class MealRecordService {
      * @param userId 用户 ID
      * @return 平均健康分数
      */
-    public Double getAverageHealthScore(Long userId) {
+    public Double getAverageHealthScore(String userId) {
         Double avgScore = mealRecordRepository.calculateAverageHealthScore(userId);
         log.info("用户平均健康分数: userId={}, avgScore={}", userId, avgScore);
         return avgScore != null ? avgScore : 0.0;
@@ -143,7 +144,7 @@ public class MealRecordService {
      * @param limit  记录数量
      * @return 用餐记录列表
      */
-    public List<MealRecord> getRecentMealRecords(Long userId, int limit) {
+    public List<MealRecord> getRecentMealRecords(String userId, int limit) {
         log.info("查询用户最近的用餐记录: userId={}, limit={}", userId, limit);
         return mealRecordRepository.findRecentMealsByUserId(userId, limit);
     }
@@ -154,7 +155,7 @@ public class MealRecordService {
      * @param userId 用户 ID
      * @return 记录总数
      */
-    public long countMealRecords(Long userId) {
+    public long countMealRecords(String userId) {
         return mealRecordRepository.countByUserId(userId);
     }
 
@@ -164,7 +165,7 @@ public class MealRecordService {
      * @param userId 用户 ID
      * @return 均衡比例（0-1）
      */
-    public double getBalancedMealRatio(Long userId) {
+    public double getBalancedMealRatio(String userId) {
         long totalCount = mealRecordRepository.countByUserId(userId);
         if (totalCount == 0) {
             return 0.0;
@@ -223,7 +224,7 @@ public class MealRecordService {
      *
      * @return 默认用户 ID
      */
-    public static Long getDefaultUserId() {
+    public static String getDefaultUserId() {
         return DEFAULT_USER_ID;
     }
 }

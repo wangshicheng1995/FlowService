@@ -27,8 +27,8 @@ public class FoodStressScore {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "user_id", nullable = false, length = 64)
+    private String userId;
 
     @Column(name = "score_days", nullable = false)
     private LocalDate scoreDays;

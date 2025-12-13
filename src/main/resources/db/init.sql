@@ -7,11 +7,12 @@ USE flow_db;
 
 DROP TABLE IF EXISTS meal_nutrition;
 DROP TABLE IF EXISTS meal_records;
+DROP TABLE IF EXISTS food_stress_score;
 
 -- 创建 meal_records 表
 CREATE TABLE IF NOT EXISTS meal_records (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
-    user_id BIGINT NOT NULL COMMENT '属于哪个用户（前期可以先写死一个 ID）',
+    user_id VARCHAR(64) NOT NULL COMMENT '用户 ID（支持 Apple ID 格式，如 000514.xxx.1422）',
     eaten_at DATETIME NOT NULL COMMENT '吃这顿饭的时间（前端上传）',
     source_type VARCHAR(20) NOT NULL COMMENT '来源：PHOTO / TEXT / VOICE 等，方便后面分析',
     image_url VARCHAR(512) NULL COMMENT '食物照片在你对象存储里的地址，没图就 NULL',
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS flow_test.meal_records LIKE flow_db.meal_records;
 -- 创建 food_stress_score 表
 CREATE TABLE IF NOT EXISTS food_stress_score (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
-    user_id BIGINT NOT NULL COMMENT '用户 ID',
+    user_id VARCHAR(64) NOT NULL COMMENT '用户 ID（支持 Apple ID 格式）',
     score_days DATE NOT NULL COMMENT '评分日期',
     score INT NOT NULL COMMENT '健康压力值 (0-100)',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

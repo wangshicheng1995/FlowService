@@ -42,7 +42,7 @@ public class HomeServiceImpl implements HomeService {
      * @return 热量统计结果，包含总热量、就餐次数、平均热量等信息
      */
     @Override
-    public CalorieStatisticsResponse getTotalCalories(Long userId, LocalDate startDate, LocalDate endDate) {
+    public CalorieStatisticsResponse getTotalCalories(String userId, LocalDate startDate, LocalDate endDate) {
         log.info("开始获取用户热量统计: userId={}, startDate={}, endDate={}", userId, startDate, endDate);
 
         // 如果未传入日期，默认使用当天

@@ -51,7 +51,7 @@ class MealRecordServiceTest {
         analysisResponse.setNutrition(nutrition);
 
         // When: 保存用餐记录
-        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
+        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null, null);
 
         // Then: 验证保存成功
         assertNotNull(savedRecord.getId(), "记录 ID 不应为空");
@@ -100,7 +100,7 @@ class MealRecordServiceTest {
         analysisResponse.setNutrition(nutrition);
 
         // When: 保存用餐记录
-        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
+        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null, null);
 
         // Then: 验证保存成功
         assertNotNull(savedRecord.getId());
@@ -136,7 +136,7 @@ class MealRecordServiceTest {
         analysisResponse.setNutrition(nutrition);
 
         // When: 保存用餐记录
-        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
+        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null, null);
 
         // Then: 验证保存成功
         assertNotNull(savedRecord.getId());
@@ -162,9 +162,9 @@ class MealRecordServiceTest {
         FoodAnalysisResponse response2 = createSampleResponse("汉堡", 0.85, false);
         FoodAnalysisResponse response3 = createSampleResponse("沙拉", 0.95, true);
 
-        mealRecordService.saveMealRecord(response1, null);
-        mealRecordService.saveMealRecord(response2, null);
-        mealRecordService.saveMealRecord(response3, null);
+        mealRecordService.saveMealRecord(response1, null, null);
+        mealRecordService.saveMealRecord(response2, null, null);
+        mealRecordService.saveMealRecord(response3, null, null);
 
         // When: 查询默认用户的所有记录
         List<MealRecord> records = mealRecordService.getMealRecordsByUserId(
@@ -185,7 +185,7 @@ class MealRecordServiceTest {
     void testGetMealRecordById() {
         // Given: 保存一条用餐记录
         FoodAnalysisResponse analysisResponse = createSampleResponse("鸡胸肉", 0.92, true);
-        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
+        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null, null);
 
         // When: 根据 ID 查询
         MealRecord foundRecord = mealRecordService.getMealRecordById(savedRecord.getId());
@@ -210,9 +210,9 @@ class MealRecordServiceTest {
         FoodAnalysisResponse response2 = createSampleResponse("健康餐2", 0.85, true); // 高分
         FoodAnalysisResponse response3 = createSampleResponse("普通餐", 0.7, false); // 低分
 
-        mealRecordService.saveMealRecord(response1, null);
-        mealRecordService.saveMealRecord(response2, null);
-        mealRecordService.saveMealRecord(response3, null);
+        mealRecordService.saveMealRecord(response1, null, null);
+        mealRecordService.saveMealRecord(response2, null, null);
+        mealRecordService.saveMealRecord(response3, null, null);
 
         // When: 计算平均健康分数
         Double avgScore = mealRecordService.getAverageHealthScore(
@@ -234,11 +234,11 @@ class MealRecordServiceTest {
         // Given: 保存 3 条均衡 + 2 条不均衡的记录
         for (int i = 0; i < 3; i++) {
             FoodAnalysisResponse balanced = createSampleResponse("均衡餐" + i, 0.9, true);
-            mealRecordService.saveMealRecord(balanced, null);
+            mealRecordService.saveMealRecord(balanced, null, null);
         }
         for (int i = 0; i < 2; i++) {
             FoodAnalysisResponse unbalanced = createSampleResponse("不均衡餐" + i, 0.8, false);
-            mealRecordService.saveMealRecord(unbalanced, null);
+            mealRecordService.saveMealRecord(unbalanced, null, null);
         }
 
         // When: 计算均衡比例
@@ -259,7 +259,7 @@ class MealRecordServiceTest {
     void testDataPersistence() {
         // Given: 保存一条记录
         FoodAnalysisResponse analysisResponse = createSampleResponse("测试食物", 0.88, true);
-        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null);
+        MealRecord savedRecord = mealRecordService.saveMealRecord(analysisResponse, null, null);
         Long recordId = savedRecord.getId();
 
         // When: 直接从 Repository 查询（绕过 Service 缓存）

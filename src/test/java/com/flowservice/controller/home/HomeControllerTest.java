@@ -43,7 +43,7 @@ class HomeControllerTest {
     private MealRecordRepository mealRecordRepository;
 
     // 测试用的用户 ID
-    private static final Long TEST_USER_ID = 100L;
+    private static final String TEST_USER_ID = "test_user_100";
 
     /**
      * 每个测试前清理测试数据
@@ -76,7 +76,7 @@ class HomeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is(200)))
                 .andExpect(jsonPath("$.message", is("查询成功")))
-                .andExpect(jsonPath("$.data.userId", is(TEST_USER_ID.intValue())))
+                .andExpect(jsonPath("$.data.userId", is(TEST_USER_ID)))
                 .andExpect(jsonPath("$.data.totalCalories", is(1200)))
                 .andExpect(jsonPath("$.data.mealCount", is(3)))
                 .andExpect(jsonPath("$.data.averageCaloriesPerMeal", is(400.0)));
@@ -191,8 +191,8 @@ class HomeControllerTest {
         // Given: 插入两个用户的数据
         LocalDateTime now = LocalDateTime.now();
 
-        Long userA = 101L;
-        Long userB = 102L;
+        String userA = "test_user_101";
+        String userB = "test_user_102";
 
         insertMealRecordWithNutrition(userA, now.minusHours(2), 600); // 用户 A 的数据
         insertMealRecordWithNutrition(userA, now.minusHours(1), 400); // 用户 A 的数据
@@ -204,7 +204,7 @@ class HomeControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is(200)))
-                .andExpect(jsonPath("$.data.userId", is(userA.intValue())))
+                .andExpect(jsonPath("$.data.userId", is(userA)))
                 .andExpect(jsonPath("$.data.totalCalories", is(1000))) // 只有用户 A 的 600 + 400
                 .andExpect(jsonPath("$.data.mealCount", is(2)));
 
@@ -243,7 +243,7 @@ class HomeControllerTest {
      * @param calories 热量（千卡）
      * @return 保存后的 MealRecord
      */
-    private MealRecord insertMealRecordWithNutrition(Long userId, LocalDateTime eatenAt, int calories) {
+    private MealRecord insertMealRecordWithNutrition(String userId, LocalDateTime eatenAt, int calories) {
         // 创建用餐记录
         MealRecord record = new MealRecord();
         record.setUserId(userId);
@@ -279,7 +279,7 @@ class HomeControllerTest {
      * @param eatenAt 用餐时间
      * @return 保存后的 MealRecord
      */
-    private MealRecord insertMealRecordWithoutNutrition(Long userId, LocalDateTime eatenAt) {
+    private MealRecord insertMealRecordWithoutNutrition(String userId, LocalDateTime eatenAt) {
         MealRecord record = new MealRecord();
         record.setUserId(userId);
         record.setEatenAt(eatenAt);
