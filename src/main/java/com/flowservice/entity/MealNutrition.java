@@ -78,4 +78,11 @@ public class MealNutrition {
      */
     @Column(name = "sat_fat_g")
     private Double satFatG;
+
+    /**
+     * 优质蛋白来源列表（JSON 数组格式）
+     * 存储识别出的优质蛋白食材，如 ["鸡蛋", "鲈鱼", "虾仁"]
+     */
+    @Column(name = "high_quality_proteins", columnDefinition = "TEXT")
+    private String highQualityProteins;
 }

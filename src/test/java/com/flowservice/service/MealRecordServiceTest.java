@@ -37,9 +37,29 @@ class MealRecordServiceTest {
         // Given: 创建一个营养均衡的食物分析结果
         FoodAnalysisResponse analysisResponse = new FoodAnalysisResponse();
 
-        FoodAnalysisResponse.FoodItem item1 = new FoodAnalysisResponse.FoodItem("牛油果", 80, "生食");
-        FoodAnalysisResponse.FoodItem item2 = new FoodAnalysisResponse.FoodItem("全麦吐司", 60, "烘烤");
-        FoodAnalysisResponse.FoodItem item3 = new FoodAnalysisResponse.FoodItem("鸡蛋", 50, "水煮");
+        FoodAnalysisResponse.FoodItem item1 = new FoodAnalysisResponse.FoodItem();
+        item1.setName("牛油果");
+        item1.setCook("生食");
+        item1.setKcal(140);
+        item1.setCarbs(7.0);
+        item1.setProteins(2.0);
+        item1.setFats(12.0);
+
+        FoodAnalysisResponse.FoodItem item2 = new FoodAnalysisResponse.FoodItem();
+        item2.setName("全麦吐司");
+        item2.setCook("烘烤");
+        item2.setKcal(145);
+        item2.setCarbs(21.0);
+        item2.setProteins(5.0);
+        item2.setFats(2.0);
+
+        FoodAnalysisResponse.FoodItem item3 = new FoodAnalysisResponse.FoodItem();
+        item3.setName("鸡蛋");
+        item3.setCook("水煮");
+        item3.setKcal(78);
+        item3.setCarbs(0.6);
+        item3.setProteins(6.0);
+        item3.setFats(5.0);
 
         analysisResponse.setFoods(Arrays.asList(item1, item2, item3));
         analysisResponse.setConfidence(0.95);
@@ -88,7 +108,13 @@ class MealRecordServiceTest {
         // Given: 创建一个营养不均衡的食物分析结果
         FoodAnalysisResponse analysisResponse = new FoodAnalysisResponse();
 
-        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem("白米饭", 200, "蒸");
+        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem();
+        item.setName("白米饭");
+        item.setCook("蒸");
+        item.setKcal(232);
+        item.setCarbs(52.0);
+        item.setProteins(4.0);
+        item.setFats(0.5);
         analysisResponse.setFoods(Arrays.asList(item));
 
         analysisResponse.setConfidence(0.98);
@@ -124,7 +150,13 @@ class MealRecordServiceTest {
         // Given: 创建一个低确定度的食物分析结果
         FoodAnalysisResponse analysisResponse = new FoodAnalysisResponse();
 
-        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem("绿叶蔬菜", 100, "炒");
+        FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem();
+        item.setName("绿叶蕴菜");
+        item.setCook("炒");
+        item.setKcal(50);
+        item.setCarbs(3.0);
+        item.setProteins(2.0);
+        item.setFats(5.0);
         analysisResponse.setFoods(Arrays.asList(item));
 
         analysisResponse.setConfidence(0.65);
@@ -288,7 +320,7 @@ class MealRecordServiceTest {
         // 构造 FoodItem 对象列表
         FoodAnalysisResponse.FoodItem item = new FoodAnalysisResponse.FoodItem();
         item.setName(foodName);
-        item.setAmountG(100); // 默认重量
+        item.setKcal(100); // 默认卡路里
 
         response.setFoods(Arrays.asList(item));
         response.setConfidence(confidence);

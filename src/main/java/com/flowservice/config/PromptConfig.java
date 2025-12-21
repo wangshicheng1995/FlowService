@@ -16,11 +16,12 @@ public class PromptConfig {
   public static final String FOOD_NUTRITION_ANALYSIS_PROMPT = """
       你是一位专业的营养分析师。请分析这张食物图片，完成以下任务：
 
-      1. 识别图片中的所有食物（列出主要食材及其重量、烹饪方式）
-      2. 计算整体营养成分（能量、蛋白质、脂肪、碳水等）
-      3. 评估识别的确定程度（0-1之间的小数，1 表示完全确定）
-      4. 判断这一餐从营养学角度是否均衡（true/false）
-      5. 用一句话概括营养评价（20字以内，通俗易懂）
+      1. 为这一餐生成一个简洁的统称（如"奶油草莓蛋糕"、"红烧肉套餐"、"菌菇奶油披萨"）
+      2. 识别图片中的所有食物（列出每种食材的名称、烹饪方式、卡路里（单位 kcal）、碳水化合物（单位 g）、蛋白质（单位 g）、脂肪（单位 g））
+      3. 计算整体营养成分（能量、蛋白质、脂肪、碳水等）
+      4. 评估识别的确定程度（0-1之间的小数，1 表示完全确定）
+      5. 判断这一餐从营养学角度是否均衡（true/false）
+      6. 用一句话概括营养评价（20字以内，通俗易懂）
 
       【关键要求】
       - 必须严格按照 JSON 格式输出
@@ -31,9 +32,10 @@ public class PromptConfig {
 
       【输出格式】
       {
+        "foodName": "这一餐的统称",
         "foods": [
-          { "name": "食物名称", "amount_g": 100, "cook": "烹饪方式" },
-          { "name": "食物名称", "amount_g": 150 }
+          { "name": "食物名称", "cook": "清蒸", "kcal": 120, "carbs": 15, "proteins": 8, "fats": 5 },
+          { "name": "食物名称", "cook": "红烧", "kcal": 180, "carbs": 20, "proteins": 12, "fats": 3 }
         ],
         "nutrition": {
           "energy_kcal": 650,
@@ -51,7 +53,14 @@ public class PromptConfig {
       }
 
       【字段说明】
-      - foods: 食物数组，每个食物包含名称、重量（克）、烹饪方式（可选）
+      - foodName: 这一餐的统称，简洁描述整体（2-8个字，如"草莓蛋糕"、"红烧肉套餐"）
+      - foods: 食物数组，每个食物包含：
+        * name: 食物名称
+        * cook: 烹饪方式
+        * kcal: 该食物的卡路里（千卡）
+        * carbs: 碳水化合物（克）
+        * proteins: 蛋白质（克）
+        * fats: 脂肪（克）
       - nutrition: 整体营养成分（基于所有食物总和）
         * energy_kcal: 总热量（千卡）
         * protein_g: 蛋白质（克）
@@ -69,13 +78,14 @@ public class PromptConfig {
       图片：清晰的红烧肉套餐
       输出：
       {
+        "foodName": "红烧肉套餐",
         "foods": [
-          { "name": "红烧肉", "amount_g": 120, "cook": "红烧" },
-          { "name": "青椒", "amount_g": 80, "cook": "清炒" },
-          { "name": "豆腐", "amount_g": 100, "cook": "红烧" },
-          { "name": "莲藕", "amount_g": 60, "cook": "清炒" },
-          { "name": "木耳", "amount_g": 40, "cook": "清炒" },
-          { "name": "米饭", "amount_g": 150 }
+          { "name": "红烧肉", "cook": "红烧", "kcal": 280, "carbs": 2, "proteins": 18, "fats": 22 },
+          { "name": "青椒", "cook": "清炒", "kcal": 45, "carbs": 4, "proteins": 1, "fats": 3 },
+          { "name": "豆腐", "cook": "红烧", "kcal": 85, "carbs": 2, "proteins": 8, "fats": 5 },
+          { "name": "莲藕", "cook": "清炒", "kcal": 60, "carbs": 10, "proteins": 1, "fats": 2 },
+          { "name": "木耳", "cook": "清炒", "kcal": 20, "carbs": 3, "proteins": 1, "fats": 0 },
+          { "name": "米饭", "cook": "蒸煮", "kcal": 195, "carbs": 52, "proteins": 4, "fats": 0 }
         ],
         "nutrition": {
           "energy_kcal": 820,
@@ -96,8 +106,9 @@ public class PromptConfig {
       图片：一碗白米饭
       输出：
       {
+        "foodName": "白米饭",
         "foods": [
-          { "name": "白米饭", "amount_g": 200 }
+          { "name": "白米饭", "cook": "蒸煮", "kcal": 232, "carbs": 52, "proteins": 4, "fats": 0.5 }
         ],
         "nutrition": {
           "energy_kcal": 232,
@@ -118,9 +129,10 @@ public class PromptConfig {
       图片：牛油果吐司
       输出：
       {
+        "foodName": "牛油果吐司",
         "foods": [
-          { "name": "牛油果", "amount_g": 80, "cook": "生食" },
-          { "name": "全麦吐司", "amount_g": 60, "cook": "烘烤" }
+          { "name": "牛油果", "cook": "生食", "kcal": 140, "carbs": 7, "proteins": 2, "fats": 12 },
+          { "name": "全麦吐司", "cook": "烘烤", "kcal": 145, "carbs": 21, "proteins": 5, "fats": 2 }
         ],
         "nutrition": {
           "energy_kcal": 285,

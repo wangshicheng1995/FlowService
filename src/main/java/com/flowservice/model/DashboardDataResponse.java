@@ -41,6 +41,12 @@ public class DashboardDataResponse {
      */
     private Integer mealCount;
 
+    /**
+     * 当日优质蛋白来源列表
+     * 汇总当天所有餐食中识别出的优质蛋白（去重）
+     */
+    private java.util.List<String> highQualityProteins;
+
     // ==================== TODO: 待开发的指标 ====================
 
     // TODO: 营养均衡指数（0-100）

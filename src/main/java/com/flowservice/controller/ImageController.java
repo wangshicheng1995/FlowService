@@ -7,6 +7,7 @@ import com.flowservice.model.FoodAnalysisResponse;
 import com.flowservice.model.ProcessRequest;
 import com.flowservice.service.ImageProcessService;
 import com.flowservice.service.MealRecordService;
+import com.flowservice.util.ImageCompressor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -57,8 +58,11 @@ public class ImageController {
                 return ApiResponse.error(400, "仅支持图片格式文件");
             }
 
-            byte[] imageBytes = file.getBytes();
+            byte[] imageBytes = ImageCompressor.compress(file);
             String imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
+
+            log.info("图片压缩后大小: {}KB, Base64长度: {}KB",
+                    imageBytes.length / 1024, imageBase64.length() / 1024);
 
             // 使用食物营养分析 Prompt
             ProcessRequest request = new ProcessRequest();

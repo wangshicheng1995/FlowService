@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -19,6 +21,7 @@ public class ImageProcessService {
     private final DataProcessService dataProcessService;
     private final MealRecordService mealRecordService;
     private final ImpactAnalysisService impactAnalysisService;
+    private final QualityProteinService qualityProteinService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -70,6 +73,27 @@ public class ImageProcessService {
 
             log.info("食物分析任务完成: {}, 识别到 {} 种食物, 确定度: {}, 营养均衡: {}",
                     taskId, response.getFoods().size(), response.getConfidence(), response.getIsBalanced());
+
+            // ---------------------------------------------------------
+            // 新增：识别优质蛋白来源
+            // ---------------------------------------------------------
+            try {
+                if (response.getFoods() != null && !response.getFoods().isEmpty()) {
+                    // 提取食物名称列表
+                    List<String> foodNames = response.getFoods().stream()
+                            .map(FoodAnalysisResponse.FoodItem::getName)
+                            .collect(Collectors.toList());
+
+                    // 调用优质蛋白识别服务
+                    List<String> highQualityProteins = qualityProteinService.identifyHighQualityProteins(foodNames);
+                    response.setHighQualityProteins(highQualityProteins);
+
+                    log.info("优质蛋白识别完成: taskId={}, proteins={}", taskId, highQualityProteins);
+                }
+            } catch (Exception e) {
+                log.error("优质蛋白识别失败，忽略错误", e);
+            }
+            // ---------------------------------------------------------
 
             // ---------------------------------------------------------
             // 新增：调用饮食影响分析服务

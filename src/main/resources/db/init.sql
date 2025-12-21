@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS meal_nutrition (
     sodium_mg INT NULL COMMENT '钠（毫克）',
     sugar_g INT NULL COMMENT '糖（克）',
     sat_fat_g DOUBLE NULL COMMENT '饱和脂肪（克）',
+    high_quality_proteins TEXT NULL COMMENT '优质蛋白来源列表（JSON 数组格式，如 ["鸡蛋", "鲈鱼", "虾仁"]）',
     CONSTRAINT fk_meal_nutrition_meal_id FOREIGN KEY (meal_id) REFERENCES meal_records (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用餐营养信息表';
 

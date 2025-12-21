@@ -1,5 +1,7 @@
 package com.flowservice.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flowservice.entity.MealNutrition;
 import com.flowservice.entity.MealRecord;
 import com.flowservice.model.CalorieStatisticsResponse;
@@ -14,7 +16,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 首页服务实现类
@@ -27,6 +32,7 @@ public class HomeServiceImpl implements HomeService {
 
     private final MealRecordRepository mealRecordRepository;
     private final HealthStressService healthStressService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 获取首页仪表盘聚合数据
@@ -68,35 +74,46 @@ public class HomeServiceImpl implements HomeService {
             response.setMealCount(0);
         }
 
+        // 3. 获取当日优质蛋白来源
+        try {
+            List<String> highQualityProteins = getHighQualityProteinsForDate(userId, targetDate);
+            response.setHighQualityProteins(highQualityProteins);
+            log.debug("优质蛋白获取成功: proteins={}", highQualityProteins);
+        } catch (Exception e) {
+            log.error("获取优质蛋白失败，使用空列表", e);
+            response.setHighQualityProteins(new ArrayList<>());
+        }
+
         // ==================== TODO: 待开发的指标 ====================
 
-        // TODO: 3. 获取营养均衡指数
+        // TODO: 4. 获取营养均衡指数
         // response.setNutritionBalanceIndex(calculateNutritionBalanceIndex(userId,
         // targetDate));
 
-        // TODO: 4. 获取饮食质量指数
+        // TODO: 5. 获取饮食质量指数
         // response.setDietQualityIndex(calculateDietQualityIndex(userId, targetDate));
 
-        // TODO: 5. 获取糖负荷
+        // TODO: 6. 获取糖负荷
         // response.setSugarLoadG(calculateSugarLoad(userId, targetDate));
 
-        // TODO: 6. 获取盐负荷
+        // TODO: 7. 获取盐负荷
         // response.setSodiumLoadMg(calculateSodiumLoad(userId, targetDate));
 
-        // TODO: 7. 获取油脂摄入
+        // TODO: 8. 获取油脂摄入
         // response.setFatIntakeG(calculateFatIntake(userId, targetDate));
 
-        // TODO: 8. 获取蛋白质摄入
+        // TODO: 9. 获取蛋白质摄入
         // response.setProteinIntakeG(calculateProteinIntake(userId, targetDate));
 
-        // TODO: 9. 获取膳食纤维摄入
+        // TODO: 10. 获取膳食纤维摄入
         // response.setFiberIntakeG(calculateFiberIntake(userId, targetDate));
 
-        // TODO: 10. 获取饱和脂肪摄入
+        // TODO: 11. 获取饱和脂肪摄入
         // response.setSatFatIntakeG(calculateSatFatIntake(userId, targetDate));
 
-        log.info("首页仪表盘数据获取完成: userId={}, stressScore={}, totalCalories={}, mealCount={}",
-                userId, response.getStressScore(), response.getTotalCalories(), response.getMealCount());
+        log.info("首页仪表盘数据获取完成: userId={}, stressScore={}, totalCalories={}, mealCount={}, proteinsCount={}",
+                userId, response.getStressScore(), response.getTotalCalories(), response.getMealCount(),
+                response.getHighQualityProteins() != null ? response.getHighQualityProteins().size() : 0);
 
         return response;
     }
@@ -169,5 +186,47 @@ public class HomeServiceImpl implements HomeService {
                 totalCalories,
                 validMealCount,
                 averageCaloriesPerMeal);
+    }
+
+    /**
+     * 获取指定日期的优质蛋白来源列表
+     * 从用户当日所有餐食中提取优质蛋白并去重合并
+     *
+     * @param userId 用户 ID
+     * @param date   查询日期
+     * @return 去重后的优质蛋白列表
+     */
+    private List<String> getHighQualityProteinsForDate(String userId, LocalDate date) {
+        LocalDateTime startTime = date.atStartOfDay();
+        LocalDateTime endTime = date.atTime(LocalTime.MAX);
+
+        // 查询当日所有用餐记录
+        List<MealRecord> mealRecords = mealRecordRepository.findByUserIdAndEatenAtBetween(userId, startTime, endTime);
+
+        // 使用 LinkedHashSet 保持顺序并去重
+        Set<String> allProteins = new LinkedHashSet<>();
+
+        for (MealRecord record : mealRecords) {
+            MealNutrition nutrition = record.getMealNutrition();
+            if (nutrition != null && nutrition.getHighQualityProteins() != null
+                    && !nutrition.getHighQualityProteins().isEmpty()) {
+                try {
+                    // 反序列化 JSON 数组
+                    List<String> proteins = objectMapper.readValue(
+                            nutrition.getHighQualityProteins(),
+                            new TypeReference<List<String>>() {
+                            });
+                    allProteins.addAll(proteins);
+                    log.trace("从餐食 {} 提取优质蛋白: {}", record.getId(), proteins);
+                } catch (Exception e) {
+                    log.warn("反序列化优质蛋白列表失败: mealId={}, json={}",
+                            record.getId(), nutrition.getHighQualityProteins(), e);
+                }
+            }
+        }
+
+        List<String> result = new ArrayList<>(allProteins);
+        log.debug("当日优质蛋白聚合完成: userId={}, date={}, proteins={}", userId, date, result);
+        return result;
     }
 }

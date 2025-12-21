@@ -78,6 +78,13 @@ public class MealRecordService {
                 nutrition.setSugarG(analysisResponse.getNutrition().getSugarG());
                 nutrition.setSatFatG(analysisResponse.getNutrition().getSatFatG());
 
+                // 保存优质蛋白列表（序列化为 JSON）
+                if (analysisResponse.getHighQualityProteins() != null
+                        && !analysisResponse.getHighQualityProteins().isEmpty()) {
+                    nutrition.setHighQualityProteins(
+                            objectMapper.writeValueAsString(analysisResponse.getHighQualityProteins()));
+                }
+
                 record.setMealNutrition(nutrition);
             }
 

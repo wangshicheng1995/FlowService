@@ -17,6 +17,14 @@ import java.util.List;
 public class FoodAnalysisResponse {
 
     /**
+     * 这一餐的统称/描述
+     * 例如："奶油草莓蛋糕"、"菌菇奶油披萨"、"红烧肉套餐"
+     * 用于在前端食物分析结果页的顶部导航栏显示
+     */
+    @JsonProperty("foodName")
+    private String foodName;
+
+    /**
      * 识别出的食物列表（包含名称、重量、烹饪方式）
      */
     @JsonProperty("foods")
@@ -47,6 +55,13 @@ public class FoodAnalysisResponse {
     private String nutritionSummary;
 
     /**
+     * 优质蛋白来源列表
+     * 通过规则表匹配 AI 识别的食物列表得出
+     */
+    @JsonProperty("highQualityProteins")
+    private List<String> highQualityProteins;
+
+    /**
      * 食物项 DTO
      */
     @Data
@@ -60,16 +75,34 @@ public class FoodAnalysisResponse {
         private String name;
 
         /**
-         * 食物重量（克）
-         */
-        @JsonProperty("amount_g")
-        private Integer amountG;
-
-        /**
-         * 烹饪方式（可选）
+         * 烹饪方式
          */
         @JsonProperty("cook")
         private String cook;
+
+        /**
+         * 该食物的卡路里（千卡）
+         */
+        @JsonProperty("kcal")
+        private Integer kcal;
+
+        /**
+         * 碳水化合物（克）
+         */
+        @JsonProperty("carbs")
+        private Double carbs;
+
+        /**
+         * 蛋白质（克）
+         */
+        @JsonProperty("proteins")
+        private Double proteins;
+
+        /**
+         * 脂肪（克）
+         */
+        @JsonProperty("fats")
+        private Double fats;
     }
 
     /**
