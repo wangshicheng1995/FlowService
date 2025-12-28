@@ -213,7 +213,7 @@ for IMG in "${IMAGE_FILES[@]}"; do
     (
         # 执行上传并保存响应（包含 userId 参数）
         HTTP_CODE=$(curl -s -w "%{http_code}" -o "$RESULT_FILE.tmp" \
-            -X POST "$SERVER/image/upload" \
+            -X POST "$SERVER/record/upload" \
             -F "file=@$IMG" \
             -F "userId=$USER_ID" \
             -H "Content-Type: multipart/form-data")

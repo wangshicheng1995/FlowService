@@ -2,7 +2,9 @@ package com.flowservice.service;
 
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversationResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flowservice.entity.MealRecord;
 import com.flowservice.model.FoodAnalysisResponse;
+import com.flowservice.model.FoodAnalysisProcessResult;
 import com.flowservice.model.ProcessRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -129,15 +131,127 @@ public class ImageProcessService {
             // ---------------------------------------------------------
 
             // 保存分析结果到数据库
+            Long mealRecordId = null;
             try {
-                mealRecordService.saveMealRecord(response, null, userId);
-                log.info("食物分析结果已保存到数据库, userId: {}", userId);
+                MealRecord savedRecord = mealRecordService.saveMealRecord(response, null, userId);
+                mealRecordId = savedRecord.getId();
+                log.info("食物分析结果已保存到数据库, userId: {}, mealRecordId: {}", userId, mealRecordId);
             } catch (Exception e) {
                 log.error("保存用餐记录到数据库失败，但继续返回 AI 分析结果", e);
                 // 不抛出异常，继续返回 AI 分析结果
             }
 
             return response;
+
+        } catch (Exception e) {
+            log.error("食物图片分析任务失败: {}", taskId, e);
+            throw new RuntimeException("食物图片分析失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 处理食物图片分析请求（返回包含记录 ID 的完整结果）
+     * 用于支持异步任务关联
+     *
+     * @param request 处理请求（包含图片 Base64 和 Prompt）
+     * @param userId  用户 ID（可选，用于关联用餐记录）
+     * @return 包含分析结果和记录 ID 的处理结果
+     */
+    public FoodAnalysisProcessResult processFoodAnalysisWithRecordId(ProcessRequest request, String userId) {
+        String taskId = UUID.randomUUID().toString();
+        log.info("开始处理食物图片分析任务（含记录ID）: {}, userId: {}", taskId, userId);
+
+        try {
+            // 验证图片数据
+            if (!dataProcessService.validateImageData(request.getImageBase64())) {
+                throw new IllegalArgumentException("无效的图片数据");
+            }
+
+            // 调用通义千问 API
+            MultiModalConversationResult qwenResult = qwenApiService.callQwenVisionApi(
+                    request.getPrompt(),
+                    request.getImageBase64());
+
+            if (qwenResult == null || qwenResult.getOutput() == null) {
+                throw new RuntimeException("通义千问API返回空响应");
+            }
+
+            // 提取 AI 返回的文本
+            String aiResponseText = qwenResult.getOutput().getChoices().get(0)
+                    .getMessage().getContent().get(0).get("text").toString();
+
+            log.info("AI 返回原始文本: {}", aiResponseText);
+
+            // 清理文本：移除可能的 markdown 代码块标记
+            String cleanedJson = aiResponseText
+                    .trim()
+                    .replaceAll("^```json\\s*", "")
+                    .replaceAll("^```\\s*", "")
+                    .replaceAll("\\s*```$", "")
+                    .trim();
+
+            log.info("清理后的 JSON: {}", cleanedJson);
+
+            // 解析 JSON 为 FoodAnalysisResponse 对象
+            FoodAnalysisResponse response = objectMapper.readValue(cleanedJson, FoodAnalysisResponse.class);
+
+            log.info("食物分析任务完成: {}, 识别到 {} 种食物, 确定度: {}, 营养均衡: {}",
+                    taskId, response.getFoods().size(), response.getConfidence(), response.getIsBalanced());
+
+            // 识别优质蛋白来源
+            try {
+                if (response.getFoods() != null && !response.getFoods().isEmpty()) {
+                    List<String> foodNames = response.getFoods().stream()
+                            .map(FoodAnalysisResponse.FoodItem::getName)
+                            .collect(Collectors.toList());
+
+                    List<String> highQualityProteins = qualityProteinService.identifyHighQualityProteins(foodNames);
+                    response.setHighQualityProteins(highQualityProteins);
+                }
+            } catch (Exception e) {
+                log.error("优质蛋白识别失败，忽略错误", e);
+            }
+
+            // 调用饮食影响分析服务
+            try {
+                if (response.getNutrition() != null) {
+                    com.flowservice.entity.MealNutrition mealNutrition = new com.flowservice.entity.MealNutrition();
+                    mealNutrition.setEnergyKcal(response.getNutrition().getEnergyKcal());
+                    mealNutrition.setProteinG(response.getNutrition().getProteinG());
+                    mealNutrition.setFatG(response.getNutrition().getFatG());
+                    mealNutrition.setCarbG(response.getNutrition().getCarbG());
+                    mealNutrition.setFiberG(response.getNutrition().getFiberG());
+                    mealNutrition.setSodiumMg(response.getNutrition().getSodiumMg());
+                    mealNutrition.setSugarG(response.getNutrition().getSugarG());
+                    mealNutrition.setSatFatG(response.getNutrition().getSatFatG());
+
+                    com.flowservice.model.FullImpactAnalysisResult fullResult = impactAnalysisService
+                            .analyzeImpact(mealNutrition, response.getIsBalanced(), response.getNutritionSummary());
+
+                    if (fullResult != null) {
+                        response.setOverallEvaluation(fullResult.getOverallEvaluation());
+                        response.setImpact(fullResult.getImpact());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("调用饮食影响分析服务失败，忽略错误", e);
+            }
+
+            // 保存分析结果到数据库
+            Long mealRecordId = null;
+            try {
+                MealRecord savedRecord = mealRecordService.saveMealRecord(response, null, userId);
+                mealRecordId = savedRecord.getId();
+                log.info("食物分析结果已保存到数据库, userId: {}, mealRecordId: {}", userId, mealRecordId);
+            } catch (Exception e) {
+                log.error("保存用餐记录到数据库失败，但继续返回 AI 分析结果", e);
+            }
+
+            return FoodAnalysisProcessResult.builder()
+                    .analysisResponse(response)
+                    .mealRecordId(mealRecordId)
+                    .userId(userId)
+                    .build();
 
         } catch (Exception e) {
             log.error("食物图片分析任务失败: {}", taskId, e);

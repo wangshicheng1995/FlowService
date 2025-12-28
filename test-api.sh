@@ -21,8 +21,8 @@ echo ""
 
 # 测试1: 健康检查
 echo "测试1: 健康检查接口"
-echo "请求: GET $SERVER/api/status/health"
-response=$(curl -s -w "\n%{http_code}" "$SERVER/api/status/health")
+echo "请求: GET $SERVER/api/home/health"
+response=$(curl -s -w "\n%{http_code}" "$SERVER/api/home/health")
 http_code=$(echo "$response" | tail -n1)
 body=$(echo "$response" | head -n -1)
 
@@ -37,18 +37,18 @@ fi
 
 echo ""
 
-# 测试2: 服务信息
-echo "测试2: 服务信息接口"
-echo "请求: GET $SERVER/api/status/info"
-response=$(curl -s -w "\n%{http_code}" "$SERVER/api/status/info")
+# 测试2: 首页仪表盘接口
+echo "测试2: 首页仪表盘接口"
+echo "请求: GET $SERVER/api/home/dashboard?userId=test_user"
+response=$(curl -s -w "\n%{http_code}" "$SERVER/api/home/dashboard?userId=test_user")
 http_code=$(echo "$response" | tail -n1)
 body=$(echo "$response" | head -n -1)
 
 if [ "$http_code" = "200" ]; then
-    echo -e "${GREEN}✓ 服务信息获取成功${NC}"
+    echo -e "${GREEN}✓ 首页仪表盘获取成功${NC}"
     echo "响应: $body"
 else
-    echo -e "${RED}✗ 服务信息获取失败 (HTTP $http_code)${NC}"
+    echo -e "${RED}✗ 首页仪表盘获取失败 (HTTP $http_code)${NC}"
     echo "响应: $body"
     exit 1
 fi
@@ -69,11 +69,11 @@ if [ "$has_image" = "y" ] || [ "$has_image" = "Y" ]; then
     fi
 
     echo "上传图片: $image_path"
-    echo "请求: POST $SERVER/api/image/upload"
+    echo "请求: POST $SERVER/api/record/upload"
 
-    response=$(curl -s -w "\n%{http_code}" -X POST "$SERVER/api/image/upload" \
+    response=$(curl -s -w "\n%{http_code}" -X POST "$SERVER/api/record/upload" \
         -F "file=@$image_path" \
-        -F "prompt=请描述这张图片")
+        -F "userId=test_user")
 
     http_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | head -n -1)
@@ -97,7 +97,7 @@ echo "========================================="
 echo ""
 echo "App 端调用示例："
 echo ""
-echo "curl -X POST '$SERVER/api/image/upload' \\"
+echo "curl -X POST '$SERVER/api/record/upload' \\"
 echo "  -F 'file=@/path/to/image.jpg' \\"
-echo "  -F 'prompt=请描述这张图片'"
+echo "  -F 'userId=your_user_id'"
 echo ""

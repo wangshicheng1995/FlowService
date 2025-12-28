@@ -505,13 +505,13 @@ echo ""
 print_info "验证应用健康状态..."
 sleep 3
 
-HEALTH_CHECK=$(ssh "$SERVER_USER@$SERVER_IP" "curl -s http://localhost:8080/api/status/health" || echo "fail")
+HEALTH_CHECK=$(ssh "$SERVER_USER@$SERVER_IP" "curl -s http://localhost:8080/api/home/health" || echo "fail")
 
 if echo "$HEALTH_CHECK" | grep -q "200"; then
     print_success "应用健康检查通过！"
     echo ""
     echo "访问地址："
-    echo "  http://$SERVER_IP:8080/api/status/health"
+    echo "  http://$SERVER_IP:8080/api/home/health"
 else
     print_warning "健康检查未通过，但服务已启动"
     echo "可能原因：应用还在初始化，稍后会恢复正常"
