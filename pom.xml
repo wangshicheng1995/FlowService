@@ -13,7 +13,7 @@
 
     <groupId>com.flowservice</groupId>
     <artifactId>flowservice</artifactId>
-    <version>1.0.30</version>
+    <version>1.0.31</version>
     <name>FlowService</name>
     <description>FlowService - Image processing with Alibaba Qwen integration</description>
 

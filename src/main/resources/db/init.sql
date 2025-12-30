@@ -1,3 +1,6 @@
+-- 设置字符集和排序规则，防止 Illegal mix of collations 错误
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- 创建主业务数据库（flow_db）
 CREATE DATABASE IF NOT EXISTS flow_db
     CHARACTER SET utf8mb4
@@ -16,7 +19,12 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键',
     apple_id VARCHAR(64) NOT NULL UNIQUE COMMENT 'Apple Sign In 的用户标识',
     nickname VARCHAR(50) NULL COMMENT '用户昵称',
-    avatar_url VARCHAR(512) NULL COMMENT '头像 URL',
+    gender VARCHAR(20) NULL COMMENT '性别：male/female/other',
+    birth_year INT NULL COMMENT '出生年份（1900-2025）',
+    height_cm DOUBLE NULL COMMENT '身高（厘米，50.0-300.0）',
+    weight_kg DOUBLE NULL COMMENT '体重（公斤，10.0-500.0）',
+    activity_level VARCHAR(30) NULL COMMENT '活动水平：sedentary/light/moderate/active/veryActive',
+    health_goal VARCHAR(30) NULL COMMENT '健康目标：loseWeight/maintain/gainWeight/improveHealth/controlBloodSugar',
     target_calories INT NULL DEFAULT 2000 COMMENT '每日目标热量（千卡）',
     target_protein INT NULL DEFAULT 60 COMMENT '每日目标蛋白质（克）',
     target_carb INT NULL DEFAULT 250 COMMENT '每日目标碳水（克）',
@@ -48,7 +56,8 @@ CREATE TABLE IF NOT EXISTS meal_records (
     INDEX idx_user_id (user_id),
     INDEX idx_eaten_at (eaten_at),
     INDEX idx_user_eaten (user_id, eaten_at),
-    INDEX idx_health_score (health_score)
+    INDEX idx_health_score (health_score),
+    CONSTRAINT fk_meal_records_user_id FOREIGN KEY (user_id) REFERENCES users (apple_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用餐记录表';
 
 -- 创建 meal_nutrition 表
@@ -74,7 +83,8 @@ CREATE TABLE IF NOT EXISTS food_stress_score (
     score INT NOT NULL COMMENT '健康压力值 (0-100)',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    UNIQUE KEY idx_user_date (user_id, score_days)
+    UNIQUE KEY idx_user_date (user_id, score_days),
+    CONSTRAINT fk_stress_score_user_id FOREIGN KEY (user_id) REFERENCES users (apple_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='健康压力值记录表';
 
 -- ==================== 测试数据库 ====================

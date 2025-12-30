@@ -34,10 +34,40 @@ public class User {
     private String nickname;
 
     /**
-     * 头像 URL
+     * 性别：male/female/other
      */
-    @Column(name = "avatar_url", length = 512)
-    private String avatarUrl;
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    /**
+     * 出生年份（1900-2025）
+     */
+    @Column(name = "birth_year")
+    private Integer birthYear;
+
+    /**
+     * 身高（厘米，50.0-300.0）
+     */
+    @Column(name = "height_cm")
+    private Double heightCm;
+
+    /**
+     * 体重（公斤，10.0-500.0）
+     */
+    @Column(name = "weight_kg")
+    private Double weightKg;
+
+    /**
+     * 活动水平：sedentary/light/moderate/active/veryActive
+     */
+    @Column(name = "activity_level", length = 30)
+    private String activityLevel;
+
+    /**
+     * 健康目标：loseWeight/maintain/gainWeight/improveHealth/controlBloodSugar
+     */
+    @Column(name = "health_goal", length = 30)
+    private String healthGoal;
 
     /**
      * 每日目标热量（千卡）
